@@ -140,7 +140,11 @@
     .coffee-hero img { width:100%; height:100%; object-fit:cover; object-position:center 58%; display:block; }
     .logo-hero { height:clamp(130px, 28vw, 210px); background:#fff; border:1px solid #eee; }
     .coffee-hero-caption { position:absolute; bottom:10px; right:12px; background:rgba(61,35,23,.82); color:#fff5e9; border-radius:20px; padding:7px 13px; font-weight:800; font-size:clamp(12px, 2.6vw, 16px); }
-    .install-note { position:fixed; z-index:1200; bottom:18px; left:14px; right:14px; max-width:420px; margin:auto; background:#70452f; color:#fff7ef; border:1px solid #f7e6d3; border-radius:14px; padding:12px 14px; box-shadow:0 8px 28px #49332644; display:flex; align-items:center; gap:10px; }
+    .install-note { position:fixed; z-index:1200; bottom: max(14px, env(safe-area-inset-bottom)); left:14px; right:14px; max-width:430px; margin:auto; background:linear-gradient(135deg,#70452f,#4e3023); color:#fff7ef; border:1px solid #e6c8a9; border-radius:18px; padding:14px; box-shadow:0 12px 34px #2d1b1366; display:flex; align-items:center; gap:10px; animation:installSlideUp .35s ease-out; }
+    @keyframes installSlideUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    .install-note .install-copy strong { font-size:14px; }
+    .install-note .install-copy span { color:#f5e4d4; }
+    .install-note .install-action { box-shadow:0 3px 0 #c8a98e; }
     .install-note[hidden] { display:none; }
     .install-note .install-action { background:#f0dfce; color:#70452f; border:0; border-radius:9px; padding:8px 11px; font-weight:800; white-space:nowrap; cursor:pointer; }
     .install-note .install-close { background:transparent; color:#fff; border:0; font-size:20px; cursor:pointer; }
@@ -275,13 +279,18 @@
     }
 
     .toast-notification {
-      position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%);
-      background: var(--text); color: #fff; padding: 10px 20px; border-radius: 30px;
-      display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      z-index: 9999; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 14px; font-weight: 700;
+      position: fixed; bottom: -110px; left: 50%; transform: translateX(-50%);
+      width: max-content; max-width: calc(100vw - 28px); box-sizing: border-box;
+      background: #fffdf9; color: #493021; padding: 12px 15px; border: 1px solid #ead8c6; border-radius: 18px;
+      display: flex; align-items: center; gap: 11px; box-shadow: 0 12px 35px rgba(65,39,22,.22);
+      z-index: 9999; transition: bottom .35s cubic-bezier(.175,.885,.32,1.275); font-size: 14px; font-weight: 700; direction: rtl;
     }
-    .toast-notification.show { bottom: 30px; }
-    .toast-notification img { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; background: #fff; }
+    .toast-notification.show { bottom: 24px; }
+    .toast-notification img { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; object-fit: cover; background: #f5e8db; }
+    .toast-copy { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .toast-copy strong { font-size:13px; line-height:1.4; }
+    .toast-copy small { color:#8a6b56; font-size:11px; font-weight:500; }
+    .toast-check { display:flex; align-items:center; justify-content:center; width:25px; height:25px; flex:0 0 25px; border-radius:50%; background:#e6f5e8; color:#258044; font-size:15px; }
 
     footer { text-align: center; padding: 24px; font-size: 14px; color: var(--muted); background: var(--card-bg); margin-top: 40px; border-top: 1px solid var(--border); line-height: 1.8; }
     footer strong { color: var(--primary); font-size: 15px; }
@@ -306,9 +315,10 @@
     </svg>
   </a>
 
-  <div id="toast" class="toast-notification">
-    <img id="toast-img" src="" alt="شعار" loading="lazy">
-    <span>تمت إضافة المنتج إلى السلة ☕</span>
+  <div id="toast" class="toast-notification" role="status" aria-live="polite">
+    <img id="toast-img" src="brand-logo.jpg" alt="صورة المنتج">
+    <div class="toast-copy"><strong id="toast-title">تمت إضافة المنتج إلى السلة</strong><small id="toast-subtitle">أصبح المنتج في سلتك ☕</small></div>
+    <span class="toast-check" aria-hidden="true">✓</span>
   </div>
 
   <header>
@@ -697,22 +707,28 @@
         alert("عذراً، المتجر مغلق حالياً: " + (storeData.closeReason || ""));
         return;
       }
-      const existing = cart.find(item => item.id === id);
+      const product = allProducts.find(p => String(p.id) === String(id));
+      if (!product) {
+        console.warn("تعذر العثور على المنتج لإضافته إلى السلة:", id);
+        return;
+      }
+      const productId = String(product.id);
+      const existing = cart.find(item => String(item.id) === productId);
       if (existing) {
         existing.qty += 1;
       } else {
-        cart.push({ id: id, qty: 1 });
+        cart.push({ id: productId, qty: 1 });
       }
       updateCartUI();
-      showToast();
+      showToast(product);
     }
 
     function updateQuantity(id, delta) {
-      const item = cart.find(i => i.id === id);
+      const item = cart.find(i => String(i.id) === String(id));
       if (!item) return;
       item.qty += delta;
       if (item.qty <= 0) {
-        cart = cart.filter(i => i.id !== id);
+        cart = cart.filter(i => String(i.id) !== String(id));
       }
       updateCartUI();
     }
@@ -720,23 +736,32 @@
     function setQuantity(id, value) {
       const val = parseInt(value);
       if (isNaN(val) || val <= 0) {
-        cart = cart.filter(i => i.id !== id);
+        cart = cart.filter(i => String(i.id) !== String(id));
       } else {
-        const item = cart.find(i => i.id === id);
+        const item = cart.find(i => String(i.id) === String(id));
         if (item) item.qty = val;
       }
       updateCartUI();
     }
 
     function removeFromCart(id) {
-      cart = cart.filter(i => i.id !== id);
+      cart = cart.filter(i => String(i.id) !== String(id));
       updateCartUI();
     }
 
-    function showToast() {
+    let toastTimer;
+    function showToast(product) {
       const toast = document.getElementById('toast');
+      const image = document.getElementById('toast-img');
+      const title = document.getElementById('toast-title');
+      const subtitle = document.getElementById('toast-subtitle');
+      image.src = (product && product.img) ? product.img : 'brand-logo.jpg';
+      image.alt = product ? String(product.name || 'صورة المنتج') : 'صورة المنتج';
+      title.textContent = product ? `تمت إضافة ${product.name || 'المنتج'} إلى السلة` : 'تمت إضافة المنتج إلى السلة';
+      subtitle.textContent = 'تمت الإضافة بنجاح ☕';
       toast.classList.add('show');
-      setTimeout(() => { toast.classList.remove('show'); }, 2000);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2600);
     }
 
     function updateCartUI() {
@@ -753,7 +778,7 @@
 
       let totals = {};
       cartItems.innerHTML = cart.map(cartItem => {
-        const p = allProducts.find(prod => prod.id === cartItem.id);
+        const p = allProducts.find(prod => String(prod.id) === String(cartItem.id));
         if(!p) return '';
         let curr = p.currency || 'ر.س';
         let itemTotal = Number(p.price) * cartItem.qty;
@@ -853,7 +878,7 @@
 
       let totals = {};
       cart.forEach((cartItem, i) => {
-        const p = allProducts.find(prod => prod.id === cartItem.id);
+        const p = allProducts.find(prod => String(prod.id) === String(cartItem.id));
         if(p) {
           let currency = p.currency || 'ر.س';
           let itemSubtotal = Number(p.price) * cartItem.qty;
@@ -929,7 +954,7 @@
       alert('شكراً لك على تقييمك!');
     }
   
-    // إخفاء مربع التثبيت نهائياً عند فتح المتجر كتطبيق مثبت.
+    // مربع تثبيت صغير أسفل الصفحة؛ زر التخطي يخفيه لهذه الجلسة.
     (function setupInstallPrompt(){
       const note = document.getElementById('install-note');
       const action = document.getElementById('install-action');
@@ -938,10 +963,15 @@
       let installPrompt = null;
       const isRunningAsApp = () => window.matchMedia('(display-mode: standalone)').matches ||
         window.matchMedia('(display-mode: fullscreen)').matches || window.navigator.standalone === true;
-      const isInstalled = () => isRunningAsApp() || localStorage.getItem('coffeeAppInstalled') === '1';
-      const hideInstallBox = () => { note.hidden = true; note.style.display = 'none'; };
-      if (isInstalled()) { hideInstallBox(); }
-      close.addEventListener('click', () => { note.hidden = true; });
+      const isInstalled = () => isRunningAsApp();
+      const dismissed = () => { try { return sessionStorage.getItem('coffeeInstallDismissed') === '1'; } catch(e) { return false; } };
+      const hideInstallBox = () => { note.hidden = true; };
+      const showInstallBox = () => { if (!isInstalled() && !dismissed()) { note.hidden = false; note.style.display = 'flex'; } };
+      if (isInstalled()) hideInstallBox(); else if (!dismissed()) setTimeout(showInstallBox, 700);
+      close.addEventListener('click', () => {
+        hideInstallBox();
+        try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {}
+      });
       action.addEventListener('click', async () => {
         if (isInstalled()) { hideInstallBox(); return; }
         if (installPrompt) {
@@ -949,28 +979,18 @@
           let choice = null;
           try { choice = await installPrompt.userChoice; } catch(e) {}
           installPrompt = null;
-          if (choice && choice.outcome === 'accepted') {
-            try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
-            hideInstallBox();
-          }
+          if (choice && choice.outcome === 'accepted') hideInstallBox();
         } else {
-          message.textContent = 'من قائمة المتصفح اختر «إضافة إلى الشاشة الرئيسية» لتثبيت التطبيق.';
+          message.textContent = 'لتثبيت التطبيق، افتح قائمة المتصفح ثم اختر «إضافة إلى الشاشة الرئيسية». ';
         }
       });
       window.addEventListener('beforeinstallprompt', (e) => {
         if (isInstalled()) { hideInstallBox(); return; }
-        e.preventDefault(); installPrompt = e;
+        e.preventDefault(); installPrompt = e; showInstallBox();
       });
-      window.addEventListener('appinstalled', () => {
-        try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
-        hideInstallBox();
-      });
-      window.matchMedia('(display-mode: standalone)').addEventListener?.('change', () => {
-        if (isRunningAsApp()) hideInstallBox();
-      });
-      // لا نعرض رسالة تثبيت تلقائياً داخل صفحة المتجر؛ تظهر فقط عند توفر خيار تثبيت فعلي.
-      window.addEventListener('beforeinstallprompt', () => { if (!isInstalled() && !sessionStorage.getItem('coffeeInstallDismissed')) note.hidden = false; });
-      close.addEventListener('click', () => { try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
+      window.addEventListener('appinstalled', hideInstallBox);
+      const displayMode = window.matchMedia('(display-mode: standalone)');
+      displayMode.addEventListener?.('change', () => { if (isRunningAsApp()) hideInstallBox(); });
     })();
 
     if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
