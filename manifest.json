@@ -1,0 +1,20 @@
+{
+  "name": "د. رشفه ملكيه | متجر القهوة",
+  "short_name": "رشفه ملكيه",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7efe5",
+  "theme_color": "#6f4028",
+  "description": "متجر د. رشفه ملكيه للقهوة",
+  "icons": [
+    {
+      "src": "./coffee-logo.jpg",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

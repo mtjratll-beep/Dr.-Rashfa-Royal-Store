@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4a281b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+  <title>د. رشفه ملكيه | متجر القهوة</title>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2T_Qq9lXuieSw7WAlhXI72iQRSkn_AiM",
+      authDomain: "drrashfamalakia.firebaseapp.com",
+      projectId: "drrashfamalakia",
+      storageBucket: "drrashfamalakia.firebasestorage.app",
+      messagingSenderId: "631129262517",
+      appId: "1:631129262517:web:a8a30c20b6a1df552031fc",
+      measurementId: "G-1TSQQFE8JD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    try { getAnalytics(app); } catch (e) { console.warn("Analytics غير متاح، لن يؤثر على Firestore:", e); }
+    const db = getFirestore(app);
+
+    window.db = db;
+    window.doc = doc;
+    window.getDoc = getDoc;
+    window.collection = collection;
+    window.getDocs = getDocs;
+    window.addDoc = addDoc;
+    
+    window.firebaseReady = true;
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <style>
+    :root {
+      --primary: #6f4028;
+      --primary-hover: #4a281b;
+      --accent: #9a6b4f;
+      --bg: #f7efe5;
+      --card-bg: #ffffff;
+      --text: #39251c;
+      --muted: #795b49;
+      --border: #d8bda5;
+      --star: #b88955;
+      --whatsapp: #25d366;
+      --radius: 16px;
+      --shadow: 0 4px 20px -2px rgba(80, 48, 30, 0.14);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    
+    body {
+      background-color: #f4eee4;
+      background-image: url("coffee-pattern.jpg");
+      background-size: 100% auto;
+      background-position: top center;
+      background-repeat: repeat-y;
+      background-attachment: fixed;
+      color: var(--text);
+      padding-bottom: 40px;
+    }
+
+    .ticker-wrap {
+      width: 100%;
+      background: linear-gradient(90deg, #4a281b, #8b5e3c, #4a281b);
+      color: #ffffff;
+      overflow: hidden;
+      height: 38px;
+      line-height: 38px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+      border-bottom: 1px solid var(--border);
+    }
+    .ticker-move {
+      display: inline-block;
+      white-space: nowrap;
+      padding-right: 100%;
+      animation: ticker 22s linear infinite;
+    }
+    .ticker-move:hover { animation-play-state: paused; }
+    .ticker-item { display: inline-block; padding: 0 20px; }
+
+    @keyframes ticker {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(100%, 0, 0); }
+    }
+
+    #splash-screen {
+      position: fixed; inset: 0; background: var(--card-bg); z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.25s ease, visibility 0.25s; padding: 20px; text-align: center;
+    }
+    #splash-screen.fade-out { opacity: 0; visibility: hidden; }
+    .splash-logo { width: 150px; height: 150px; object-fit: cover; object-position: center; animation: zoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 28px 28px 12px 28px; border: 3px solid #c9a98e; background: linear-gradient(145deg,#fff5e9,#e7c8a8); box-shadow: 0 10px 28px #4a281b30; padding: 3px; }
+    .splash-title { margin-top: 20px; font-size: 22px; font-weight: 800; color: var(--primary); }
+
+    @keyframes zoomIn { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .store-closed-bar {
+      background-color: var(--accent); color: #fff; text-align: center; padding: 12px 20px; font-weight: 700;
+      font-size: 14px; position: sticky; top: 0; z-index: 1001; box-shadow: 0 4px 12px rgba(220,38,38,0.2); display: none;
+    }
+
+    .whatsapp-float {
+      position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
+      background-color: var(--whatsapp); color: #FFF; border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+      z-index: 1000; display: flex; align-items: center; justify-content: center;
+      text-decoration: none; animation: pulse 2s infinite; transition: transform 0.2s;
+    }
+    .whatsapp-float:hover { transform: scale(1.1); }
+    .whatsapp-float svg { width: 32px; height: 32px; fill: white; }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+      70% { box-shadow: 0 0 0 18px rgba(37, 211, 102, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+    }
+
+    header { background: linear-gradient(145deg,#fff8ef 0%,#f0dfce 100%); backdrop-filter: blur(10px); padding: 16px 12px 18px; position: relative; z-index: 100; border: 1px solid #d6b79b; border-bottom: 5px solid #6f4028; border-radius: 0 0 28px 28px; box-shadow: 0 8px 22px rgba(74,40,27,.14); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 0 auto; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+    .brand img { width: 60px; height: 60px; object-fit: cover; object-position: center; border-radius: 18px 18px 7px 18px; border: 2px solid #b88a65; background: #fff5e9; padding: 2px; box-shadow: 0 4px 10px #4a281b22; }
+    .brand h2 { font-size: 18px; font-weight: 800; color: var(--primary); }
+    
+    .coffee-hero { max-width:900px; margin:16px auto 0; height:clamp(150px, 38vw, 265px); overflow:hidden; position:relative; border-radius:24px 10px 24px 10px; border:2px solid #b88a65; background:#e7d2bd; box-shadow:0 8px 22px #4a281b20; }
+    .coffee-hero img { width:100%; height:100%; object-fit:cover; object-position:center 58%; display:block; }
+    .coffee-hero-caption { position:absolute; bottom:10px; right:12px; background:rgba(61,35,23,.82); color:#fff5e9; border-radius:20px; padding:7px 13px; font-weight:800; font-size:clamp(12px, 2.6vw, 16px); }
+    .install-note { position:fixed; z-index:1200; bottom:18px; left:14px; right:14px; max-width:420px; margin:auto; background:#4a281b; color:#fff7ef; border:1px solid #c9a98e; border-radius:14px; padding:12px 14px; box-shadow:0 8px 28px #39251c44; display:flex; align-items:center; gap:10px; }
+    .install-note[hidden] { display:none; }
+    .install-note .install-action { background:#f0dfce; color:#4a281b; border:0; border-radius:9px; padding:8px 11px; font-weight:800; white-space:nowrap; cursor:pointer; }
+    .install-note .install-close { background:transparent; color:#fff; border:0; font-size:20px; cursor:pointer; }
+    .install-note .install-copy { flex:1; font-size:13px; line-height:1.5; }
+    .search-container { display: flex; align-items: center; margin: 15px auto 0; gap: 10px; max-width: 900px; }
+    .search-input { flex: 1; padding: 12px 18px; border: 1.5px solid var(--border); border-radius: 12px; outline: none; background: #fbf5ed; transition: 0.2s; font-size: 14px; color: var(--text); }
+    .search-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(111, 64, 40, 0.15); }
+    
+    .cart-btn {
+      position: relative; background: #efe0d1; border: 1px solid var(--border);
+      padding: 10px 16px; border-radius: 12px; cursor: pointer; font-size: 18px; transition: 0.2s; color: var(--primary);
+    }
+    .cart-btn:hover { background: #e6d1bf; }
+    .cart-badge { position: absolute; top: -6px; right: -6px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    .categories-bar { display: flex; gap: 10px; overflow-x: auto; padding: 15px 0 5px; max-width: 900px; margin: 0 auto; scrollbar-width: none; }
+    .categories-bar::-webkit-scrollbar { display: none; }
+    .cat-item { background: #fff; border: 1px solid var(--border); color: var(--primary); padding: 8px 18px; border-radius: 25px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+    .cat-item.active, .cat-item:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .slider-container { width: 100%; overflow: hidden; margin: 15px 0 20px; border-radius: var(--radius); aspect-ratio: 12 / 5; max-height: 280px; background: #efe0d1; position: relative; border: 1px solid var(--border); }
+    .slider-track { display: flex; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); height: 100%; }
+    .slider-slide { min-width: 100%; height: 100%; }
+    .slider-slide img { width: 100%; height: 100%; object-fit: cover; }
+
+    .container { padding: 0 12px; max-width: 900px; margin: 0 auto; }
+    
+    .products-grid { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 12px; 
+    }
+    .product-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;
+      box-shadow: var(--shadow); transition: all 0.2s ease;
+      position: relative;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -10px rgba(217, 119, 6, 0.2); border-color: var(--primary); }
+    
+    .product-img-wrapper {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #f7efe5;
+      border: 1px solid var(--border);
+    }
+    .product-img-wrapper img { width: 100%; height: 130px; object-fit: contain; padding: 6px; transition: transform 0.3s ease; }
+    .product-img-wrapper:hover img { transform: scale(1.05); }
+    .zoom-hint {
+      position: absolute; bottom: 6px; left: 6px; background: rgba(217, 119, 6, 0.9); color: #fff;
+      font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 700; pointer-events: none;
+    }
+
+    .product-title { font-size: 14px; margin: 8px 0 4px; font-weight: 800; color: var(--text); line-height: 1.3; }
+    .product-price { color: var(--primary); font-weight: 800; font-size: 15px; margin-bottom: 8px; }
+    .add-to-cart {
+      background: var(--primary); color: #fff; border: none; padding: 10px; border-radius: 8px;
+      cursor: pointer; width: 100%; font-size: 13px; font-weight: 700; transition: background 0.2s;
+    }
+    .add-to-cart:hover { background: var(--primary-hover); }
+
+    .reviews-section { margin: 35px 0; background: var(--card-bg); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .reviews-section h3 { margin-bottom: 16px; font-size: 18px; color: var(--primary); font-weight: 800; }
+    .reviews-list { max-height: 240px; overflow-y: auto; margin-bottom: 16px; padding-left: 5px; }
+    .review-item { background: #f7efe5; border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; font-size: 13px; }
+    .review-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+    .review-stars { color: var(--star); }
+    .star-rating { display: flex; gap: 6px; margin-bottom: 12px; direction: ltr; justify-content: flex-end; cursor: pointer; }
+    .star-rating span { font-size: 24px; color: #fde68a; transition: color 0.2s; }
+    .star-rating span.active { color: var(--star); }
+
+    .review-form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; outline: none; font-size: 13px; background: #fff; }
+
+    .modal { display: none; position: fixed; inset: 0; background: rgba(69, 26, 3, 0.6); backdrop-filter: blur(4px); z-index: 2000; justify-content: center; align-items: flex-end; }
+    .modal-content { background: var(--card-bg); width: 100%; max-width: 550px; border-radius: 24px 24px 0 0; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); border-top: 3px solid var(--primary); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px; }
+    .modal-header h3 { font-weight: 800; font-size: 18px; color: var(--primary); }
+    
+    .cart-item { display: flex; align-items: center; gap: 12px; margin: 12px 0; font-size: 14px; border-bottom: 1px solid #fef3c7; padding-bottom: 10px; }
+    .cart-item img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: #f7efe5; }
+    .cart-item-info { flex: 1; }
+    .cart-item-title { font-weight: 700; font-size: 14px; }
+    .cart-item-price-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .cart-item-total { color: var(--primary); font-size: 13px; font-weight: 800; margin-top: 2px; }
+
+    .quantity-control { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .qty-btn {
+      background: var(--primary); color: white; border: none; width: 26px; height: 26px;
+      border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: 0.2s;
+    }
+    .qty-btn:hover { background: var(--primary-hover); }
+    .qty-input { width: 38px; text-align: center; border: 1px solid var(--border); border-radius: 6px; font-weight: 700; font-size: 13px; padding: 2px 0; }
+    
+    .bank-box { background: #f7efe5; border: 1px dashed var(--primary); padding: 16px; border-radius: 12px; margin: 15px 0; }
+    .bank-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .bank-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .copy-btn { background: var(--primary); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; }
+
+    .shipping-info-box { background: #f7efe5; border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-top: 12px; text-align: center; font-size: 13px; color: var(--primary); font-weight: 700; }
+    .store-location-card { background: #f7efe5; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 15px; text-align: center; font-size: 13px; }
+    .store-location-card a { color: var(--primary); font-weight: 700; text-decoration: none; }
+
+    .btn-submit-whatsapp { background: var(--whatsapp); color: white; width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; transition: 0.2s; }
+    .btn-submit-whatsapp:hover { background: #1eb956; }
+    .btn-gps { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+
+    .img-modal {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+      z-index: 3000; justify-content: center; align-items: center; padding: 20px;
+      backdrop-filter: blur(5px);
+    }
+    .img-modal-content {
+      position: relative; max-width: 90%; max-height: 85vh; background: #fff;
+      border-radius: 16px; padding: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .img-modal-content img { max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 10px; }
+    .img-modal-title { font-weight: 800; color: var(--primary); font-size: 16px; margin-top: 10px; }
+    .close-img-modal {
+      position: absolute; top: -12px; right: -12px; background: var(--accent); color: white;
+      border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; font-weight: bold;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .toast-notification {
+      position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%);
+      background: var(--text); color: #fff; padding: 10px 20px; border-radius: 30px;
+      display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      z-index: 9999; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 14px; font-weight: 700;
+    }
+    .toast-notification.show { bottom: 30px; }
+    .toast-notification img { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; background: #fff; }
+
+    footer { text-align: center; padding: 24px; font-size: 14px; color: var(--muted); background: var(--card-bg); margin-top: 40px; border-top: 1px solid var(--border); line-height: 1.8; }
+    footer strong { color: var(--primary); font-size: 15px; }
+    .dev-link { margin-top: 10px; font-size: 14px; color: #16a34a; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 6px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 20px; transition: 0.2s; }
+    .dev-link:hover { background: #dcfce7; transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+
+  <div id="closed-banner" class="store-closed-bar">
+    🔒 المتجر مغلق حالياً: <span id="closed-reason-text">سوف نعود قريباً</span>
+  </div>
+
+  <div id="splash-screen">
+    <img id="splash-img" src="coffee-logo.jpg" class="splash-logo" alt="شعار المتجر">
+    <div class="splash-title">د. رشفه ملكيه<br><span style="font-size: 14px; color:var(--primary); font-weight:600;">قهوتك بمذاق ملكي ☕</span></div>
+  </div>
+
+  <a id="whatsapp-float-btn" href="https://wa.me/966553804010" class="whatsapp-float" target="_blank" title="تواصل عبر الواتساب">
+    <svg viewBox="0 0 32 32">
+      <path d="M16 2a13 13 0 0 0-11 20l-2 7 7-2a13 13 0 1 0 6-25zm0 24a11 11 0 0 1-5.6-1.5l-.4-.2-4.1 1.1 1.1-4-.3-.5A11 11 0 1 1 16 26zm6-8c-.3-.2-1.9-1-2.2-1.1s-.5-.2-.7.2-.8 1.1-1 1.3-.4.2-.7 0a9 9 0 0 1-2.6-1.6 10 10 0 0 1-1.8-2.3c-.2-.3 0-.5.1-.7s.3-.4.5-.6l.3-.4c.1-.2.1-.3 0-.5s-.7-1.7-1-2.3c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.9 1.2 3.4 1.4 3.6 2.4 3.7 5.8 5.2c.8.3 1.4.5 1.9.7.8.2 1.5.2 2.1.1.7-.1 2.2-.9 2.5-1.8s.3-1.6.2-1.8c-.1-.1-.3-.2-.6-.4z"/>
+    </svg>
+  </a>
+
+  <div id="toast" class="toast-notification">
+    <img id="toast-img" src="" alt="شعار">
+    <span>تمت إضافة المنتج إلى السلة ☕</span>
+  </div>
+
+  <header>
+    <div class="header-top">
+      <div class="brand">
+        <img id="header-logo" src="coffee-logo.jpg" alt="شعار المتجر">
+        <div>
+          <h2>د. رشفه ملكيه</h2>
+          <span style="font-size:11px; color:var(--primary); font-weight:700;">متجر القهوة المختصة</span>
+        </div>
+      </div>
+      <button class="cart-btn" onclick="toggleCart()">🛒 <span id="cart-count" class="cart-badge">0</span></button>
+    </div>
+
+    <div class="coffee-hero" aria-label="إعلان القهوة من د. رشفه ملكيه"><img src="coffee-ad-banner.jpg" alt="إعلان قهوة مختارة بعناية من د. رشفه ملكيه"><div class="coffee-hero-caption">قهوتك... لحظة مزاج ملكية ☕</div></div>
+
+    <div class="search-container">
+      <input type="text" id="search-input" class="search-input" placeholder="ابحث عن القهوة ومنتجاتها..." oninput="filterProducts()">
+    </div>
+
+  </header>
+
+  <div id="install-note" class="install-note" hidden role="dialog" aria-label="تثبيت التطبيق">
+    <div class="install-copy"><strong>☕ د. رشفه ملكيه</strong><br><span id="install-message">ثبّت التطبيق لتصل إلى قهوتك المفضلة بسهولة.</span></div>
+    <button id="install-action" class="install-action" type="button">تثبيت التطبيق</button>
+    <button id="install-close" class="install-close" type="button" aria-label="إغلاق">×</button>
+  </div>
+
+  <div class="container">
+    <div class="ticker-wrap">
+      <div class="ticker-move">
+        <div class="ticker-item">☕ أهلاً بكم في د. رشفه ملكيه — قهوة مختارة بمذاق ملكي</div>
+        <div class="ticker-item">🤎 نختار لكم أجود حبوب القهوة بعناية</div>
+      </div>
+    </div>
+
+    <div class="slider-container" id="slider-box">
+      <div class="slider-track" id="slider-main"></div>
+    </div>
+
+    <div class="products-grid" id="products-container"></div>
+
+    <div class="reviews-section">
+      <h3>آراء وتقييمات العملاء</h3>
+      <div class="reviews-list" id="reviews-list"></div>
+      
+      <div style="background: #f7efe5; padding:16px; border-radius:12px; border:1px solid var(--border);">
+        <h4 style="font-size:14px; margin-bottom:10px; color:var(--primary);">أضف رأيك وتقييمك:</h4>
+        <input type="text" id="review-name" class="review-form-input" placeholder="اسمك الكريم">
+        <div class="star-rating" id="star-rating">
+          <span onclick="setRating(5)">★</span>
+          <span onclick="setRating(4)">★</span>
+          <span onclick="setRating(3)">★</span>
+          <span onclick="setRating(2)">★</span>
+          <span onclick="setRating(1)">★</span>
+        </div>
+        <input type="text" id="review-text" class="review-form-input" placeholder="اكتب رأيك حول القهوة وتجربتك في المتجر...">
+        <button class="add-to-cart" onclick="addReview()">إرسال التقييم</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    جميع الحقوق محفوظة لـ <br>
+    <strong>د. رشفه ملكيه — متجر القهوة</strong> 2026<br>
+    <a href="https://wa.me/966553804010" target="_blank" class="dev-link">
+      <span>برمجة أبو سيف</span> 
+      <span style="direction:ltr;">966553804010</span>
+      <span>💬</span>
+    </a>
+  </footer>
+
+  <div class="modal" id="cart-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>سلة التسوق</h3>
+        <button onclick="toggleCart()" style="border:none; background:none; font-size:20px; cursor:pointer; color:var(--primary);">✕</button>
+      </div>
+
+      <div id="store-location-box" class="store-location-card" style="display:none;">
+        📍 <strong>موقع المتجر:</strong> <a id="store-location-link" href="#" target="_blank">اضغط هنا لعرض خريطة الموقع 🗺️</a>
+      </div>
+
+      <div id="cart-items"></div>
+      <div style="margin-top:12px; font-weight:800; text-align:left; font-size:16px; color:var(--primary);" id="cart-total">المجموع: 0</div>
+
+      <div style="margin-top: 15px; background: #f7efe5; padding: 14px; border: 1px solid var(--border); border-radius: 12px;">
+        <label style="font-size: 13px; font-weight: 700; color: var(--primary); display:block; margin-bottom:6px;">👤 اسم العميل الكريم:</label>
+        <input type="text" id="customer-name" class="review-form-input" placeholder="أدخل اسمك الكامل هنا...">
+        <label style="font-size: 13px; font-weight: 700; color: var(--primary); display:block; margin-top:8px; margin-bottom:6px;">📍 موقع التوصيل / العنوان:</label>
+        <input type="text" id="customer-location" class="review-form-input" placeholder="أدخل منطقتك أو مدينتك...">
+        <button type="button" class="btn-gps" onclick="getCurrentLocation()">📍 جلب موقعي عبر الـ GPS</button>
+      </div>
+
+      <div class="shipping-info-box">
+        🚚 سوف يتم تحديد عمولة نقل وتوصيل الشحنة إلى مدينتك بعد إرسال الطلب.
+      </div>
+
+      <div class="bank-box" id="bank-accounts-container">
+        <p style="font-weight:800; margin-bottom:10px; text-align:center; color:var(--primary);">حسابات التحويل المالي المعتمدة:</p>
+        <div id="bank-list-modal"></div>
+      </div>
+
+      <button class="btn-submit-whatsapp" id="btn-submit-order" onclick="sendOrderToWhatsApp()">إرسال الطلب عبر الواتساب 💬</button>
+    </div>
+  </div>
+
+  <div class="img-modal" id="image-view-modal" onclick="closeProductImageModal(event)">
+    <div class="img-modal-content" onclick="event.stopPropagation()">
+      <button class="close-img-modal" onclick="closeProductImageModal()">✕</button>
+      <img id="modal-product-img" src="" alt="صورة المنتج مكبرة">
+      <div class="img-modal-title" id="modal-product-title"></div>
+    </div>
+  </div>
+
+  <script>
+    let storeData = {
+      phone: "966553804010",
+      locationUrl: "",
+      isClosed: false,
+      closeReason: "المتجر مغلق حالياً، نسعد بخدمتكم قريباً.",
+      sliders: [],
+      bankAccounts: [],
+      reviews: []
+    };
+
+    let allProducts = [];
+    let cart = [];
+    let selectedRating = 5;
+    let currentSlide = 0;
+    let sliderInterval = null;
+
+    // افتح الواجهة فوراً؛ لا ننتظر Firebase حتى تظهر الصفحة.
+    // بيانات السحابة تُضاف تلقائياً بعد الاتصال.
+    initUI();
+    setTimeout(() => {
+      const splash = document.getElementById('splash-screen');
+      if (splash) splash.classList.add('fade-out');
+    }, 700);
+    if (window.db) fetchStoreDataFromCloud();
+    else window.addEventListener('firebase-ready', fetchStoreDataFromCloud, { once: true });
+
+    function normalizeCloudProduct(p, fallbackId = null, source = '') {
+      if (!p || typeof p !== "object") return null;
+      const name = p.name ?? p.اسم ?? p.الاسم ?? p.productName ?? p.اسم_المنتج ?? p.title ?? p.العنوان ?? "منتج";
+      const price = p.price ?? p.السعر ?? p.سعر ?? p.productPrice ?? p.السعر_القديم ?? 0;
+      const currency = p.currency ?? p.العملة ?? p.currencyName ?? "ر.س";
+      const img = p.img ?? p.image ?? p.الصورة ?? p.imageUrl ?? p.photo ?? p.صورة ?? "https://via.placeholder.com/150?text=منتج";
+      const id = p.id ?? p.productId ?? p.معرف ?? fallbackId ?? `${source}-${name}-${price}`;
+      return { ...p, id, firestoreId: p.firestoreId ?? fallbackId ?? null, name, price, currency, img, _source: source };
+    }
+
+    function extractProductsFromObject(data, source = '') {
+      if (!data || typeof data !== "object") return [];
+      const raw = data.منتجات ?? data.products ?? data.items ?? data.المنتجات ?? data.productList ?? data.قائمة_المنتجات;
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw.map((p,i) => normalizeCloudProduct(p, `${source}-${i}`, source)).filter(Boolean);
+      if (typeof raw === "object") return Object.keys(raw).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric:true})).map(k => normalizeCloudProduct(raw[k], `${source}-${k}`, source)).filter(Boolean);
+      return [];
+    }
+
+    function extractReviewsFromObject(data) {
+      if (!data || typeof data !== "object") return [];
+      const raw = data.التقييمات ?? data.reviews ?? data.آراء_العملاء;
+      if (Array.isArray(raw)) return raw.filter(Boolean);
+      if (raw && typeof raw === "object") return Object.values(raw).filter(Boolean);
+      return [];
+    }
+
+    async function safeGetCollection(name) {
+      try { return await window.getDocs(window.collection(window.db, name)); }
+      catch (e) { console.warn(`تعذر قراءة مجموعة ${name}:`, e); return null; }
+    }
+
+    async function fetchStoreDataFromCloud() {
+      // قراءة مباشرة من Firestore نفسه. لا يوجد cache محلي ولا حذف أو نقل للبيانات.
+      allProducts = [];
+      storeData.reviews = [];
+      try {
+        // 1) إعدادات المتجر: نقرأ البنية الحالية والقديمة معاً.
+        try {
+          const settingsSnap = await window.getDoc(window.doc(window.db, "settings", "store_config"));
+          if (settingsSnap.exists()) storeData = { ...storeData, ...settingsSnap.data() };
+        } catch(e) { console.warn("تعذر قراءة settings/store_config", e); }
+        try {
+          const arabicSettings = await window.getDocs(window.collection(window.db, "إعدادات"));
+          arabicSettings.forEach(d => {
+            const data = d.data() || {};
+            storeData = { ...storeData, ...data };
+          });
+        } catch(e) { console.warn("تعذر قراءة مجموعة إعدادات", e); }
+
+        // 2) المنتجات: المصدر الذي ظهر في Firebase عندك هو «منتجات».
+        const seen = new Set();
+        const addProduct = (raw, source, docId) => {
+          if (!raw || typeof raw !== 'object') return;
+          const p = normalizeCloudProduct(raw, `${source}-${docId || allProducts.length}`, source);
+          if (!p) return;
+          // مفتاح للعرض فقط؛ لا يحذف شيئاً من Firebase.
+          const key = String(docId || p.id || `${p.name}|${p.price}|${p.img}`);
+          if (seen.has(key)) return;
+          seen.add(key);
+          if (!p.id) p.id = `${source}-${docId || allProducts.length}`;
+          allProducts.push(p);
+        };
+        try {
+          const snap = await window.getDocs(window.collection(window.db, "منتجات"));
+          snap.forEach(d => addProduct(d.data(), "منتجات", d.id));
+        } catch(e) { console.error("تعذر قراءة منتجات", e); }
+
+        // إبقاء المصدر الإنجليزي كما هو إن كان موجوداً.
+        try {
+          const snap = await window.getDocs(window.collection(window.db, "products"));
+          snap.forEach(d => addProduct(d.data(), "products", d.id));
+        } catch(e) { console.warn("تعذر قراءة products", e); }
+
+        // 3) المتاجر: نقرأ كل المستندات الموجودة، ونستخرج منتجاتها إن كانت مخزنة داخلها.
+        try {
+          const storesSnap = await window.getDocs(window.collection(window.db, "المتاجر"));
+          storesSnap.forEach(d => {
+            const data = d.data() || {};
+            // نستخدم بيانات المتجر للعرض، دون الكتابة عليها.
+            storeData = { ...storeData, ...data };
+            const raw = data.منتجات ?? data.products ?? data.المنتجات;
+            if (Array.isArray(raw)) raw.forEach((p,i) => addProduct(p, `المتاجر/${d.id}`, i));
+            else if (raw && typeof raw === 'object') Object.keys(raw).forEach(k => addProduct(raw[k], `المتاجر/${d.id}`, k));
+            const oldReviews = data.التقييمات ?? data.reviews;
+            if (Array.isArray(oldReviews)) storeData.reviews.push(...oldReviews);
+            else if (oldReviews && typeof oldReviews === 'object') storeData.reviews.push(...Object.values(oldReviews));
+          });
+        } catch(e) { console.warn("تعذر قراءة المتاجر", e); }
+
+        // 4) التقييمات: المجموعة الظاهرة في Firebase عندك هي «التقييمات».
+        try {
+          const snap = await window.getDocs(window.collection(window.db, "التقييمات"));
+          snap.forEach(d => storeData.reviews.push({ firestoreId: d.id, ...d.data() }));
+        } catch(e) { console.warn("تعذر قراءة التقييمات", e); }
+        try {
+          const snap = await window.getDocs(window.collection(window.db, "reviews"));
+          snap.forEach(d => storeData.reviews.push({ firestoreId: d.id, ...d.data() }));
+        } catch(e) { console.warn("تعذر قراءة reviews", e); }
+
+        console.log("Firebase cloud data loaded directly", {
+          products: allProducts.length,
+          reviews: storeData.reviews.length
+        });
+      } catch(e) {
+        console.error("خطأ في قراءة بيانات Firebase:", e);
+      }
+      // عرض منتجات القهوة فقط؛ لا يتم حذف أو تعديل أي بيانات في قاعدة البيانات.
+      allProducts = allProducts.filter(isCoffeeProduct);
+      initUI();
+    }
+
+    function isCoffeeProduct(p) {
+      const text = [p.name, p.category, p.الفئة, p.categoryName, p.التصنيف, p.القسم, p.قسم, p.النوع, p.description, p.الوصف].filter(Boolean).join(' ').toLowerCase();
+      return !/(عسل|سدر|سمر|مجرى|شمع العسل|honey|sidr|sumr|beeswax|منحل|مناحل)/i.test(text);
+    }
+
+    function initUI() {
+      checkStoreStatus();
+      renderStoreInfo();
+      renderSliders();
+      renderDynamicCategories();
+      renderProducts(allProducts);
+      renderReviews();
+      renderCartBankAccounts();
+
+    }
+
+    function checkStoreStatus() {
+      const closedBanner = document.getElementById('closed-banner');
+      if (storeData.isClosed) {
+        closedBanner.style.display = 'block';
+        document.getElementById('closed-reason-text').innerText = storeData.closeReason || "المتجر مغلق حالياً.";
+      } else {
+        closedBanner.style.display = 'none';
+      }
+    }
+
+    function renderStoreInfo() {
+      const logo = storeData.logo || "coffee-logo.jpg";
+      document.getElementById('splash-img').src = logo;
+      document.getElementById('header-logo').src = logo;
+      document.getElementById('toast-img').src = logo;
+      document.getElementById('whatsapp-float-btn').href = `https://wa.me/${storeData.phone || '966553804010'}`;
+
+      const storeLocBox = document.getElementById('store-location-box');
+      const storeLocLink = document.getElementById('store-location-link');
+      if (storeData.locationUrl) {
+        storeLocLink.href = storeData.locationUrl;
+        storeLocBox.style.display = 'block';
+      } else {
+        storeLocBox.style.display = 'none';
+      }
+    }
+
+    function renderSliders() {
+      const track = document.getElementById('slider-main');
+      const box = document.getElementById('slider-box');
+      const sliders = storeData.sliders || [];
+
+      if (sliders.length === 0) {
+        box.style.display = 'none';
+        return;
+      }
+
+      box.style.display = 'block';
+      track.innerHTML = sliders.map(img => `
+        <div class="slider-slide"><img src="${img}"></div>
+      `).join('');
+
+      if (sliderInterval) clearInterval(sliderInterval);
+      if (sliders.length > 1) {
+        sliderInterval = setInterval(() => {
+          currentSlide = (currentSlide + 1) % sliders.length;
+          track.style.transform = `translateX(${currentSlide * 100}%)`;
+        }, 3000);
+      }
+    }
+
+    function renderProducts(items) {
+      const container = document.getElementById('products-container');
+      container.innerHTML = '';
+      if(!items || items.length === 0) {
+        container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--muted);">لا توجد منتجات حالياً</p>';
+        return;
+      }
+      
+      items.forEach((p) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <div class="product-img-wrapper" onclick="openProductImageModal('${p.img}', '${p.name.replace(/'/g, "\\'")}')">
+            <img src="${p.img}" alt="${p.name}">
+            <span class="zoom-hint">🔍 تكبير</span>
+          </div>
+          <div>
+            <div class="product-title">${p.name}</div>
+            <div class="product-price">${p.price} ${p.currency || 'ر.س'}</div>
+          </div>
+          <button class="add-to-cart" onclick="addToCart('${String(p.id).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')">إضافة للسلة ☕</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openProductImageModal(imgSrc, title) {
+      document.getElementById('modal-product-img').src = imgSrc;
+      document.getElementById('modal-product-title').innerText = title;
+      document.getElementById('image-view-modal').style.display = 'flex';
+    }
+
+    function closeProductImageModal() {
+      document.getElementById('image-view-modal').style.display = 'none';
+    }
+
+    function renderDynamicCategories() {
+      const bar = document.querySelector('.categories-bar');
+      if (bar) bar.innerHTML = '';
+      window.dynamicCategories = [];
+    }
+
+    function filterProducts() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filtered = allProducts.filter(p => String(p.name || '').toLowerCase().includes(query));
+      renderProducts(filtered);
+    }
+
+    function filterCategory(cat) {
+      document.querySelectorAll('.cat-item').forEach(btn => btn.classList.remove('active'));
+      if (typeof event !== 'undefined' && event.target) event.target.classList.add('active');
+      renderProducts(allProducts.filter(isCoffeeProduct));
+    }
+
+    function addToCart(id) {
+      if (storeData.isClosed) {
+        alert("عذراً، المتجر مغلق حالياً: " + (storeData.closeReason || ""));
+        return;
+      }
+      const existing = cart.find(item => item.id === id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ id: id, qty: 1 });
+      }
+      updateCartUI();
+      showToast();
+    }
+
+    function updateQuantity(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) {
+        cart = cart.filter(i => i.id !== id);
+      }
+      updateCartUI();
+    }
+
+    function setQuantity(id, value) {
+      const val = parseInt(value);
+      if (isNaN(val) || val <= 0) {
+        cart = cart.filter(i => i.id !== id);
+      } else {
+        const item = cart.find(i => i.id === id);
+        if (item) item.qty = val;
+      }
+      updateCartUI();
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      updateCartUI();
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2000);
+    }
+
+    function updateCartUI() {
+      const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
+      document.getElementById('cart-count').innerText = totalCount;
+      const cartItems = document.getElementById('cart-items');
+      const cartTotal = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<p style="text-align:center; padding:20px; color:var(--muted);">السلة فارغة</p>';
+        cartTotal.innerText = 'المجموع: 0';
+        return;
+      }
+
+      let totals = {};
+      cartItems.innerHTML = cart.map(cartItem => {
+        const p = allProducts.find(prod => prod.id === cartItem.id);
+        if(!p) return '';
+        let curr = p.currency || 'ر.س';
+        let itemTotal = Number(p.price) * cartItem.qty;
+        totals[curr] = (totals[curr] || 0) + itemTotal;
+
+        return `
+          <div class="cart-item">
+            <img src="${p.img}">
+            <div class="cart-item-info">
+              <div class="cart-item-title">${p.name}</div>
+              <div class="cart-item-price-detail">السعر الفردي: ${p.price} ${curr}</div>
+              <div class="quantity-control">
+                <button class="qty-btn" onclick="updateQuantity(${p.id}, -1)">-</button>
+                <input type="number" class="qty-input" value="${cartItem.qty}" min="1" onchange="setQuantity(${p.id}, this.value)">
+                <button class="qty-btn" onclick="updateQuantity(${p.id}, 1)">+</button>
+              </div>
+              <div class="cart-item-total">الإجمالي: ${itemTotal} ${curr}</div>
+            </div>
+            <button onclick="removeFromCart(${p.id})" style="color:var(--accent); border:none; background:none; cursor:pointer; font-weight:700; font-size:13px;">حذف 🗑️</button>
+          </div>
+        `;
+      }).join('');
+
+      let totalStr = Object.keys(totals).map(curr => `${totals[curr]} ${curr}`).join(' | ');
+      cartTotal.innerText = `المجموع الكلي: ${totalStr}`;
+    }
+
+    function renderCartBankAccounts() {
+      const container = document.getElementById('bank-list-modal');
+      const box = document.getElementById('bank-accounts-container');
+      const accounts = storeData.bankAccounts || [];
+
+      if (accounts.length === 0) {
+        box.style.display = 'none';
+        return;
+      }
+      box.style.display = 'block';
+
+      container.innerHTML = accounts.map((acc) => `
+        <div class="bank-item">
+          <div>
+            <strong>${acc.bankName}</strong><br>
+            <span style="font-size:11px; color:var(--muted);">المستفيد: ${acc.accountName}</span><br>
+            <span style="font-size:12px; color:var(--primary); font-weight:700;">${acc.accountNumber}</span>
+          </div>
+          <button class="copy-btn" onclick="copyAccountNum('${acc.accountNumber}')">نسخ الرقم</button>
+        </div>
+      `).join('');
+    }
+
+    function copyAccountNum(num) {
+      navigator.clipboard.writeText(num);
+      alert('تم نسخ رقم الحساب بنجاح');
+    }
+
+    function toggleCart() {
+      const modal = document.getElementById('cart-modal');
+      modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+      updateCartUI();
+      renderCartBankAccounts();
+    }
+
+    function getCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          document.getElementById('customer-location').value = `https://maps.google.com/?q=${lat},${lon}`;
+        }, () => alert("تعذر تحديد الموقع الجغرافي."));
+      } else {
+        alert("المتصفح لا يدعم تحديد الموقع.");
+      }
+    }
+
+    function sendOrderToWhatsApp() {
+      if (storeData.isClosed) {
+        alert("عذراً، المتجر مغلق حالياً وإرسال الطلبات متوقف!");
+        return;
+      }
+      if (cart.length === 0) {
+        alert("السلة فارغة!");
+        return;
+      }
+
+      const customerName = document.getElementById('customer-name').value.trim();
+      const location = document.getElementById('customer-location').value.trim();
+      const orderId = 'COFFEE-' + Math.floor(100000 + Math.random() * 900000);
+
+      let msg = `☕ *طلب جديد من متجر د. رشفه ملكيه*\n`;
+      msg += `*رقم الطلب:* ${orderId}\n`;
+      if (customerName) {
+        msg += `👤 *اسم العميل:* ${customerName}\n`;
+      }
+      
+      msg += `\n📦 *تفاصيل منتجات القهوة المطلوبة:*\n`;
+      msg += `-----------------------------------\n`;
+
+      let totals = {};
+      cart.forEach((cartItem, i) => {
+        const p = allProducts.find(prod => prod.id === cartItem.id);
+        if(p) {
+          let currency = p.currency || 'ر.س';
+          let itemSubtotal = Number(p.price) * cartItem.qty;
+          totals[currency] = (totals[currency] || 0) + itemSubtotal;
+
+          msg += `${i + 1}. *${p.name}*\n`;
+          msg += `   • الكمية/العدد: *${cartItem.qty}*\n`;
+          msg += `   • السعر الفردي: ${p.price} ${currency}\n`;
+          msg += `   • الإجمالي: *${itemSubtotal} ${currency}*\n\n`;
+        }
+      });
+
+      msg += `-----------------------------------\n`;
+      let totalStr = Object.keys(totals).map(curr => `${totals[curr]} ${curr}`).join(' | ');
+      msg += `💰 *الإجمالي الكلي للطلب:* *${totalStr}*\n`;
+
+      if (location) {
+        msg += `\n📍 *موقع/عنوان التوصيل:* \n${location}\n`;
+      }
+
+      msg += `\n📌 *ملاحظات:*\nسوف يتم تحديد عمولة النقل والتوصيل بعد إرسال الطلب.\nشكراً لثقتكم بد. رشفه ملكيه! ☕🤎`;
+
+      const targetPhone = storeData.phone || '966553804010';
+      const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+    }
+
+    function renderReviews() {
+      const list = document.getElementById('reviews-list');
+      list.innerHTML = (storeData.reviews || []).map(r => `
+        <div class="review-item">
+          <div class="review-header">
+            <span>${r.name}</span>
+            <span class="review-stars">${'★'.repeat(r.rating)}</span>
+          </div>
+          <div>${r.text}</div>
+        </div>
+      `).join('');
+    }
+
+    function setRating(stars) {
+      selectedRating = stars;
+      const elements = document.querySelectorAll('#star-rating span');
+      elements.forEach((el, index) => {
+        if (5 - index <= stars) el.classList.add('active');
+        else el.classList.remove('active');
+      });
+    }
+
+    async function addReview() {
+      const name = document.getElementById('review-name').value.trim();
+      const text = document.getElementById('review-text').value.trim();
+
+      if (!name || !text) {
+        alert('يرجى كتابة الاسم ورأيك قبل الإرسال.');
+        return;
+      }
+
+      const newReview = { name, rating: selectedRating, text, date: new Date().toISOString() };
+      
+      try {
+        await window.addDoc(window.collection(window.db, "reviews"), newReview);
+      } catch(e) {
+        console.error("خطأ في حفظ التقييم سحابياً:", e);
+      }
+
+      if(!storeData.reviews) storeData.reviews = [];
+      storeData.reviews.push(newReview);
+      renderReviews();
+
+      document.getElementById('review-name').value = '';
+      document.getElementById('review-text').value = '';
+      alert('شكراً لك على تقييمك!');
+    }
+  
+    // رسالة تثبيت صغيرة قابلة للإغلاق، وزر التثبيت يظهر عند دعم المتصفح.
+    (function setupInstallPrompt(){
+      const note = document.getElementById('install-note');
+      const action = document.getElementById('install-action');
+      const message = document.getElementById('install-message');
+      const close = document.getElementById('install-close');
+      let installPrompt = null;
+      close.addEventListener('click', () => { note.hidden = true; });
+      action.addEventListener('click', async () => {
+        if (installPrompt) {
+          installPrompt.prompt();
+          try { await installPrompt.userChoice; } catch(e) {}
+          installPrompt = null; note.hidden = true;
+        } else {
+          message.textContent = 'من قائمة المتصفح اختر «إضافة إلى الشاشة الرئيسية» لتثبيت التطبيق.';
+        }
+      });
+      window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; });
+      window.addEventListener('appinstalled', () => { note.hidden = true; });
+      setTimeout(() => { if (!sessionStorage.getItem('coffeeInstallDismissed')) note.hidden = false; }, 1800);
+      close.addEventListener('click', () => { try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
+    })();
+
+    if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script>
+</body>
+</html>

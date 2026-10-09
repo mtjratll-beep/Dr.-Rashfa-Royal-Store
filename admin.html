@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم السحابية - د. رشفه ملكيه</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2T_Qq9lXuieSw7WAlhXI72iQRSkn_AiM",
+      authDomain: "drrashfamalakia.firebaseapp.com",
+      projectId: "drrashfamalakia",
+      storageBucket: "drrashfamalakia.firebasestorage.app",
+      messagingSenderId: "631129262517",
+      appId: "1:631129262517:web:a8a30c20b6a1df552031fc",
+      measurementId: "G-1TSQQFE8JD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    try { getAnalytics(app); } catch (e) { console.warn("Analytics غير متاح، لن يؤثر على Firestore:", e); }
+    const db = getFirestore(app);
+
+    window.db = db;
+    window.doc = doc;
+    window.getDoc = getDoc;
+    window.setDoc = setDoc;
+    window.collection = collection;
+    window.getDocs = getDocs;
+    window.addDoc = addDoc;
+    window.deleteDoc = deleteDoc;
+    
+    window.firebaseReady = true;
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <style>
+    :root {
+      --primary: #6f4028;
+      --primary-hover: #4a281b;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #10b981;
+      --bg-main: #f7efe5;
+      --card-bg: #ffffff;
+      --text-main: #39251c;
+      --text-muted: #795b49;
+      --border: #d8bda5;
+      --shadow: 0 10px 25px -5px rgba(80, 48, 30, 0.14);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    body {
+      background-color: #f4eee4;
+      background-image: url("coffee-pattern.jpg");
+      background-size: 100% auto;
+      background-position: top center;
+      background-repeat: repeat-y;
+      background-attachment: fixed;
+      color: var(--text-main);
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    #login-overlay {
+      position: fixed; inset: 0; background: rgba(69, 26, 3, 0.85);
+      backdrop-filter: blur(8px); z-index: 9999;
+      display: flex; justify-content: center; align-items: center; padding: 20px;
+    }
+    .login-card {
+      background: var(--card-bg); padding: 32px; border-radius: var(--radius); width: 100%; max-width: 400px;
+      text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 2px solid var(--border);
+    }
+    .login-card h2 { font-size: 22px; margin-bottom: 20px; color: var(--primary); font-weight: 800; }
+    .login-card input {
+      width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px;
+      margin-bottom: 20px; text-align: center; font-size: 18px; outline: none; transition: 0.2s;
+    }
+    .login-card input:focus { border-color: var(--primary); }
+
+    .admin-container { max-width: 900px; margin: 0 auto; display: none; }
+    .admin-header {
+      background: var(--card-bg); padding: 24px; border-radius: var(--radius);
+      box-shadow: var(--shadow); margin-bottom: 24px; text-align: center; border: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+    }
+    .admin-header h1 { font-size: 18px; color: var(--primary); font-weight: 800; }
+
+    .section-box {
+      background: var(--card-bg); border: 1px solid var(--border); padding: 24px;
+      border-radius: var(--radius); margin-bottom: 24px; box-shadow: var(--shadow);
+    }
+    .section-title {
+      font-weight: 800; margin-bottom: 16px; color: var(--primary); font-size: 18px;
+      display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 12px;
+    }
+    
+    label { font-size: 14px; font-weight: 700; display: block; margin: 12px 0 6px; color: var(--text-muted); }
+    input, select, textarea {
+      width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px;
+      font-size: 14px; outline: none; background: #f7efe5; transition: all 0.2s; color: var(--text-main);
+    }
+    input:focus, select:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15); }
+    
+    .btn {
+      background: var(--primary); color: #fff; border: none; padding: 12px 20px;
+      border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px;
+      width: 100%; margin-top: 10px; transition: 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      text-decoration: none;
+    }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: var(--danger-hover); }
+    .btn-success { background: var(--success); }
+
+    .status-badge { padding: 6px 14px; border-radius: 30px; font-size: 12px; font-weight: 700; color: white; }
+    .status-open { background-color: var(--success); }
+    .status-closed { background-color: var(--danger); }
+    
+    .item-card {
+      display: flex; align-items: center; justify-content: space-between; background: #f7efe5;
+      border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-top: 10px; transition: 0.2s; gap: 10px;
+    }
+    .item-card:hover { border-color: var(--primary); background: #fff; }
+    .item-card img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #fff; border: 1px solid var(--border); }
+    .item-info { flex: 1; margin: 0 5px; font-size: 13px; color: var(--text-muted); }
+    .item-info strong { font-size: 15px; color: var(--text-main); display: block; margin-bottom: 2px; }
+    
+    .preview-img { width: 90px; height: 90px; object-fit: contain; border-radius: 12px; border: 2px dashed var(--border); display: block; margin-top: 10px; padding: 5px; background: #fff; }
+    .note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .flex-row { display: flex; gap: 12px; }
+    .flex-row > div { flex: 1; }
+    .sync-status { font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; background: #efe0d1; color: var(--primary); }
+  </style>
+</head>
+<body>
+
+<div id="login-overlay">
+  <div class="login-card">
+    <h2>🍯 تسجيل الدخول للمدير</h2>
+    <input type="password" id="admin-password" placeholder="أدخل كلمة السر">
+    <button class="btn" onclick="checkPassword()">دخول</button>
+  </div>
+</div>
+
+<div class="admin-container" id="admin-content">
+  <div class="admin-header">
+    <h1>☕ لوحة إدارة متجر د. رشفه ملكيه</h1>
+    <div id="sync-badge" class="sync-status">جاري الاتصال بالسحابة...</div>
+  </div>
+
+  <div class="section-box" style="border-right: 6px solid var(--danger);">
+    <div class="section-title">
+      <span>🔒 حالة المتجر (إغلاق / فتح)</span>
+      <span id="store-status-badge" class="status-badge status-open">المتجر مفتوح</span>
+    </div>
+    <label>سبب الإغلاق (سيظهر للعملاء في الشريط الأحمر بالمتجر):</label>
+    <input type="text" id="store-close-reason" placeholder="مثال: مغلق حالياً لنفاد الكمية وسنعاود الفتح قريباً">
+    <button id="btn-toggle-store" class="btn btn-danger" onclick="toggleStoreStatus()">🔒 إغلاق المتجر الآن</button>
+  </div>
+
+  <div class="section-box">
+    <div class="section-title">📌 البيانات الأساسية للمتجر</div>
+    <label>رقم الواتساب (مع الرمز الدولي بدون +):</label>
+    <input type="text" id="store-phone" placeholder="مثال: 966553804010">
+    <label>📍 رابط موقع المتجر (Google Maps):</label>
+    <input type="text" id="store-location-url" placeholder="مثال: https://maps.google.com/?q=...">
+    <label>شعار الموقع (اختر صورة الشعار):</label>
+    <input type="file" id="logo-file" accept="image/*" onchange="uploadLogo(event)">
+    <img id="logo-preview" class="preview-img" src="" alt="معاينة الشعار">
+    <button class="btn" onclick="saveBasicSettings()">حفظ البيانات الأساسية والموقع 💾</button>
+  </div>
+
+  <div class="section-box">
+    <div class="section-title">
+      <span>🖼️ السلايدر المتحرك (الإعلانات)</span>
+      <span style="font-size:12px; color:var(--text-muted);" id="slider-count">0 / 10</span>
+    </div>
+    <p class="note">📏 المقاس الموصى به لصور الإعلانات: <strong>1200 × 500 بكسل</strong></p>
+    <label style="margin-top:15px;">إضافة صورة إعلان جديدة:</label>
+    <input type="file" id="slider-file" accept="image/*" onchange="addSliderImage(event)">
+    <div id="sliders-list" style="margin-top:15px;"></div>
+  </div>
+
+  <div class="section-box">
+    <div class="section-title">
+      <span>☕ إدارة منتجات القهوة (بدون حد أقصى)</span>
+      <span style="font-size:12px; color:var(--text-muted);" id="product-count">0 منتج</span>
+    </div>
+    
+    <label>اسم المنتج:</label>
+    <input type="text" id="prod-name" placeholder="مثال: قهوة عربية فاخرة / حبوب إسبريسو">
+
+    <div class="flex-row">
+      <div style="flex:2;">
+        <label>السعر:</label>
+        <input type="number" id="prod-price" placeholder="مثال: 350">
+      </div>
+      <div>
+        <label>العملة:</label>
+        <select id="prod-currency">
+          <option value="ر.س">ريال سعودي (ر.س)</option>
+          <option value="$">دولار ($)</option>
+          <option value="ر.ي">ريال يمني (ر.ي)</option>
+          <option value="ر.ع">ريال عماني (ر.ع)</option>
+        </select>
+      </div>
+    </div>
+
+    <label>صورة المنتج:</label>
+    <input type="file" id="prod-file" accept="image/*" onchange="previewProductImg(event)">
+    <img id="prod-preview" class="preview-img" style="display:none;" alt="معاينة صورة المنتج">
+
+    <button class="btn" onclick="addProduct()" style="margin-top:15px;">إضافة المنتج للسحابة ☕</button>
+
+    <h4 style="margin-top:20px; font-size:15px;">المنتجات الحالية بالسحابة:</h4>
+    <div id="products-list" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="section-box">
+    <div class="section-title">
+      <span>🏦 الحسابات البنكية (حتى 10 بنوك)</span>
+      <span style="font-size:12px; color:var(--text-muted);" id="bank-count">0 / 10</span>
+    </div>
+    <label>اسم البنك / المحفظة:</label>
+    <input type="text" id="bank-name" placeholder="مثال: البنك الأهلي / الراجحي / العمقي">
+    <label>اسم المستفيد بالكامل:</label>
+    <input type="text" id="bank-acc-name" placeholder="مثال: د. رشفه ملكيه">
+    <label>رقم الحساب / الايبان:</label>
+    <input type="text" id="bank-acc-num" placeholder="مثال: SA123456789...">
+    <button class="btn" onclick="addBank()" style="margin-top:15px;">إضافة الحساب البنكي 🏦</button>
+    <h4 style="margin-top:20px; font-size:15px;">الحسابات المضافة:</h4>
+    <div id="banks-list" style="margin-top:10px;"></div>
+  </div>
+
+  <button onclick="logoutAdmin()" class="btn btn-danger" style="margin-top:10px;">تسجيل الخروج 🚪</button>
+  <a href="index.html" class="btn" style="background:#b45309; text-align:center; display:flex; margin-top:10px;">العودة للواجهة الرئيسية 🏠</a>
+</div>
+
+<script>
+  const CORRECT_PASS = "A43214321";
+
+  let storeData = {
+    phone: "966553804010",
+    locationUrl: "",
+    isClosed: false,
+    closeReason: "المتجر مغلق حالياً، نسعد بخدمتكم قريباً.",
+    sliders: [],
+    bankAccounts: []
+  };
+
+  let productsListCache = [];
+  let tempProductImg = "";
+
+  if (window.db) {
+    loadFromCloud();
+  } else {
+    window.addEventListener('firebase-ready', loadFromCloud, { once: true });
+  }
+
+  function normalizeCloudProduct(p) {
+    if (!p || typeof p !== "object") return null;
+    return {
+      ...p,
+      name: p.name ?? p.اسم ?? p.productName ?? p.اسم_المنتج ?? "منتج",
+      price: p.price ?? p.السعر ?? p.سعر ?? p.productPrice ?? 0,
+      currency: p.currency ?? p.العملة ?? p.currencyName ?? "ر.س",
+      img: p.img ?? p.image ?? p.الصورة ?? p.imageUrl ?? p.photo ?? "https://via.placeholder.com/150?text=منتج"
+    };
+  }
+
+  function extractLegacyProducts(data) {
+    if (!data || typeof data !== "object") return [];
+    const raw = data.منتجات ?? data.products ?? data.items ?? data.المنتجات;
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw.map(normalizeCloudProduct).filter(Boolean);
+    if (typeof raw === "object") return Object.keys(raw).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric:true})).map(k => normalizeCloudProduct(raw[k])).filter(Boolean);
+    return [];
+  }
+
+  async function loadFromCloud() {
+    productsListCache = [];
+    try {
+      // إعدادات جديدة وقديمة — قراءة فقط من Firebase.
+      try {
+        const docSnap = await window.getDoc(window.doc(window.db, "settings", "store_config"));
+        if (docSnap.exists()) storeData = { ...storeData, ...docSnap.data() };
+      } catch(e) { console.warn("تعذر قراءة settings/store_config", e); }
+      try {
+        const settingsSnap = await window.getDocs(window.collection(window.db, "إعدادات"));
+        settingsSnap.forEach(d => { storeData = { ...storeData, ...(d.data() || {}) }; });
+      } catch(e) { console.warn("تعذر قراءة إعدادات", e); }
+
+      const seen = new Set();
+      const addProductToCache = (p, id, source, deletable=false) => {
+        if (!p || typeof p !== 'object') return;
+        const name = p.name ?? p.اسم ?? p.productName ?? p.اسم_المنتج ?? p.title ?? p.الاسم ?? 'منتج';
+        const price = p.price ?? p.السعر ?? p.سعر ?? p.productPrice ?? 0;
+        const img = p.img ?? p.image ?? p.الصورة ?? p.imageUrl ?? p.photo ?? p.صورة ?? 'https://via.placeholder.com/150?text=منتج';
+        const key = String(id || `${name}|${price}|${img}`);
+        if (seen.has(key)) return;
+        seen.add(key);
+        productsListCache.push({ ...p, firestoreId: id || p.firestoreId || null, name, price, currency:p.currency ?? p.العملة ?? 'ر.س', img, _source:source, _deletable:deletable });
+      };
+
+      // المصدر الأساسي الظاهر في Firebase: «منتجات».
+      try {
+        const snap = await window.getDocs(window.collection(window.db, "منتجات"));
+        snap.forEach(d => addProductToCache(d.data(), d.id, "منتجات", false));
+      } catch(e) { console.error("تعذر قراءة منتجات", e); }
+
+      // إبقاء products القديمة/الحالية.
+      try {
+        const snap = await window.getDocs(window.collection(window.db, "products"));
+        snap.forEach(d => addProductToCache(d.data(), d.id, "products", true));
+      } catch(e) { console.warn("تعذر قراءة products", e); }
+
+      // المتاجر: قراءة جميع المستندات واستخراج المنتجات الموجودة داخلها.
+      try {
+        const stores = await window.getDocs(window.collection(window.db, 'المتاجر'));
+        stores.forEach(d => {
+          const data = d.data() || {};
+          storeData = { ...storeData, ...data };
+          const raw = data.منتجات ?? data.products ?? data.المنتجات;
+          if(Array.isArray(raw)) raw.forEach((p,i)=>addProductToCache(p, `legacy-${d.id}-${i}`, `المتاجر/${d.id}`, false));
+          else if(raw && typeof raw==='object') Object.keys(raw).forEach(k=>addProductToCache(raw[k], `legacy-${d.id}-${k}`, `المتاجر/${d.id}`, false));
+        });
+      } catch(e) { console.warn('تعذر قراءة المتاجر',e); }
+
+      if (sessionStorage.getItem('admin_logged_in') === 'true') fillFormFields();
+      document.getElementById('sync-badge').innerText = `✅ تمت قراءة ${productsListCache.length} منتج مباشرة من السحابة`;
+      document.getElementById('sync-badge').style.background = '#dcfce7';
+      document.getElementById('sync-badge').style.color = '#16a34a';
+    } catch(e) {
+      console.error('خطأ في جلب بيانات لوحة التحكم:', e);
+      document.getElementById('sync-badge').innerText = '❌ تعذر قراءة السحابة';
+    }
+    renderProducts();
+  }
+
+  async function saveSettingsToCloud() {
+    try {
+      document.getElementById('sync-badge').innerText = "⏳ جاري الحفظ سحابياً...";
+      const docRef = window.doc(window.db, "settings", "store_config");
+      await window.setDoc(docRef, storeData);
+      document.getElementById('sync-badge').innerText = "✅ تم الحفظ بنجاح";
+      setTimeout(() => {
+        document.getElementById('sync-badge').innerText = "✅ متصل بالسحابة";
+      }, 2000);
+    } catch(e) {
+      console.error("فشل الحفظ:", e);
+      alert("حدث خطأ أثناء الحفظ السحابي للإعدادات!");
+    }
+  }
+
+  function parseArabicNumbers(str) {
+    return str.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  }
+
+  function checkPassword() {
+    let inputPass = document.getElementById('admin-password').value.trim();
+    inputPass = parseArabicNumbers(inputPass);
+    if (inputPass === CORRECT_PASS) {
+      sessionStorage.setItem('admin_logged_in', 'true');
+      showAdminPanel();
+    } else {
+      alert("كلمة السر غير صحيحة!");
+    }
+  }
+
+  function showAdminPanel() {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    fillFormFields();
+  }
+
+  function logoutAdmin() {
+    sessionStorage.removeItem('admin_logged_in');
+    location.reload();
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('admin_logged_in') === 'true') {
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('admin-content').style.display = 'block';
+    }
+    document.getElementById('admin-password').addEventListener('keyup', (event) => {
+      if (event.key === 'Enter') { checkPassword(); }
+    });
+  });
+
+  function fillFormFields() {
+    document.getElementById('store-phone').value = storeData.phone || "966553804010";
+    document.getElementById('store-location-url').value = storeData.locationUrl || "";
+    document.getElementById('store-close-reason').value = storeData.closeReason || "";
+    if(storeData.logo) document.getElementById('logo-preview').src = storeData.logo;
+    updateStoreStatusUI();
+    renderSliders();
+    renderProducts();
+    renderBanks();
+  }
+
+  function updateStoreStatusUI() {
+    const badge = document.getElementById('store-status-badge');
+    const toggleBtn = document.getElementById('btn-toggle-store');
+    if (storeData.isClosed) {
+      badge.className = "status-badge status-closed";
+      badge.innerText = "المتجر مغلق 🔒";
+      toggleBtn.className = "btn btn-success";
+      toggleBtn.innerText = "🔓 فتح المتجر الآن";
+    } else {
+      badge.className = "status-badge status-open";
+      badge.innerText = "المتجر مفتوح ✅";
+      toggleBtn.className = "btn btn-danger";
+      toggleBtn.innerText = "🔒 إغلاق المتجر الآن";
+    }
+  }
+
+  async function toggleStoreStatus() {
+    storeData.isClosed = !storeData.isClosed;
+    storeData.closeReason = document.getElementById('store-close-reason').value.trim() || "المتجر مغلق حالياً.";
+    await saveSettingsToCloud();
+    updateStoreStatusUI();
+    alert(storeData.isClosed ? "تم إغلاق المتجر وإظهار الرسالة للعملاء." : "تم فتح المتجر بنجاح واستقبال الطلبات!");
+  }
+
+  function processFile(file, maxWidth = 800) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = () => reject('فشل قراءة الصورة');
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject('فشل قراءة الملف');
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadLogo(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      const base64Img = await processFile(file, 400);
+      storeData.logo = base64Img;
+      document.getElementById('logo-preview').src = base64Img;
+      await saveSettingsToCloud();
+      alert("تم تحديث الشعار بنجاح في السحابة!");
+    } catch(e) {
+      alert("تعذر قراءة الصورة، اختر صورة أخرى أصغر حجماً.");
+    }
+  }
+
+  async function saveBasicSettings() {
+    storeData.phone = document.getElementById('store-phone').value.trim() || "966553804010";
+    storeData.locationUrl = document.getElementById('store-location-url').value.trim();
+    storeData.closeReason = document.getElementById('store-close-reason').value.trim();
+    await saveSettingsToCloud();
+    alert("تم حفظ البيانات الأساسية في السحابة بنجاح!");
+  }
+
+  function renderSliders() {
+    const list = document.getElementById('sliders-list');
+    const sliders = storeData.sliders || [];
+    document.getElementById('slider-count').innerText = `${sliders.length} / 10`;
+    list.innerHTML = sliders.map((img, i) => `
+      <div class="item-card">
+        <img src="${img}">
+        <div class="item-info"><strong>إعلان #${i+1}</strong></div>
+        <button class="btn btn-danger" style="width:auto; padding:6px 14px;" onclick="removeSlider(${i})">حذف</button>
+      </div>
+    `).join('');
+  }
+
+  async function addSliderImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if ((storeData.sliders || []).length >= 10) {
+      alert("الحد الأقصى للإعلانات هو 10 صور فقط!");
+      return;
+    }
+    try {
+      const base64Img = await processFile(file, 1000);
+      if (!storeData.sliders) storeData.sliders = [];
+      storeData.sliders.push(base64Img);
+      await saveSettingsToCloud();
+      renderSliders();
+      alert("تمت إضافة الإعلان بنجاح للسحابة!");
+      event.target.value = '';
+    } catch(e) {
+      alert("تعذر رفع الإعلان، يرجى اختيار صورة أخرى.");
+    }
+  }
+
+  async function removeSlider(index) {
+    if (confirm("هل تريد حذف هذا الإعلان؟")) {
+      storeData.sliders.splice(index, 1);
+      await saveSettingsToCloud();
+      renderSliders();
+    }
+  }
+
+  async function previewProductImg(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      tempProductImg = await processFile(file, 500);
+      const preview = document.getElementById('prod-preview');
+      preview.src = tempProductImg;
+      preview.style.display = 'block';
+    } catch(e) {
+      alert("تعذر معاينة صورة المنتج.");
+    }
+  }
+
+  // إضافة منتج كمستند مستقل تماماً في مجموعة "products" لكي يستوعب العدد لأكثر من 50 أو 100 منتج
+  async function addProduct() {
+    const name = document.getElementById('prod-name').value.trim();
+    const price = document.getElementById('prod-price').value.trim();
+    const currency = document.getElementById('prod-currency').value;
+
+    if (!name || !price) {
+      alert("يرجى ملء اسم المنتج والسعر!");
+      return;
+    }
+
+    const newProd = {
+      id: Date.now(),
+      name: name,
+      price: price,
+      currency: currency,
+      img: tempProductImg || "https://via.placeholder.com/150?text=Coffee"
+    };
+
+    try {
+      document.getElementById('sync-badge').innerText = "⏳ جاري إضافة المنتج للسحابة...";
+      const docRef = await window.addDoc(window.collection(window.db, "products"), newProd);
+      newProd.firestoreId = docRef.id;
+      productsListCache.push(newProd);
+      renderProducts();
+
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-price').value = '';
+      document.getElementById('prod-file').value = '';
+      document.getElementById('prod-preview').style.display = 'none';
+      tempProductImg = "";
+      
+      document.getElementById('sync-badge').innerText = "✅ متصل بالسحابة";
+      alert("تم إضافة المنتج بنجاح إلى السحابة بدون قيود!");
+    } catch(e) {
+      console.error(e);
+      alert("حدث خطأ أثناء حفظ المنتج في السحابة.");
+    }
+  }
+
+  function renderProducts() {
+    const list = document.getElementById('products-list');
+    document.getElementById('product-count').innerText = `${productsListCache.length} منتج`;
+
+    list.innerHTML = productsListCache.map((p, i) => `
+      <div class="item-card">
+        <img src="${p.img}">
+        <div class="item-info">
+          <strong>${p.name}</strong>
+          <span>السعر: ${p.price} ${p.currency || 'ر.س'}</span>
+        </div>
+        <button class="btn btn-danger" style="width:auto; padding:6px 14px;" onclick="removeProduct('${p.firestoreId}', ${i})">حذف</button>
+      </div>
+    `).join('');
+  }
+
+  async function removeProduct(firestoreId, index) {
+    const product = productsListCache[index];
+    if (product && !product._deletable) { alert("هذا المنتج قديم ومحفوظ في السحابة. لن يتم حذفه من هنا حفاظاً على البيانات."); return; }
+    if (confirm("هل تريد حذف هذا المنتج نهائياً من السحابة؟")) {
+      try {
+        await window.deleteDoc(window.doc(window.db, "products", firestoreId));
+        productsListCache.splice(index, 1);
+        renderProducts();
+        alert("تم الحذف بنجاح.");
+      } catch(e) {
+        alert("فشل حذف المنتج من السحابة.");
+      }
+    }
+  }
+
+  function renderBanks() {
+    const list = document.getElementById('banks-list');
+    const banks = storeData.bankAccounts || [];
+    document.getElementById('bank-count').innerText = `${banks.length} / 10`;
+    list.innerHTML = banks.map((b, i) => `
+      <div class="item-card">
+        <div class="item-info">
+          <strong>${b.bankName}</strong>
+          <span>المستفيد: ${b.accountName} | رقم: ${b.accountNumber}</span>
+        </div>
+        <button class="btn btn-danger" style="width:auto; padding:6px 14px;" onclick="removeBank(${i})">حذف</button>
+      </div>
+    `).join('');
+  }
+
+  async function addBank() {
+    const bankName = document.getElementById('bank-name').value.trim();
+    const accountName = document.getElementById('bank-acc-name').value.trim();
+    const accountNumber = document.getElementById('bank-acc-num').value.trim();
+
+    if (!bankName || !accountNumber) {
+      alert("يرجى إدخال اسم البنك ورقم الحساب!");
+      return;
+    }
+    if ((storeData.bankAccounts || []).length >= 10) {
+      alert("الحد الأقصى هو 10 حسابات بنكية!");
+      return;
+    }
+    if (!storeData.bankAccounts) storeData.bankAccounts = [];
+    storeData.bankAccounts.push({ bankName, accountName, accountNumber });
+    await saveSettingsToCloud();
+    renderBanks();
+
+    document.getElementById('bank-name').value = '';
+    document.getElementById('bank-acc-name').value = '';
+    document.getElementById('bank-acc-num').value = '';
+    alert("تم إضافة الحساب البنكي بنجاح للسحابة!");
+  }
+
+  async function removeBank(index) {
+    if (confirm("هل تريد حذف هذا الحساب؟")) {
+      storeData.bankAccounts.splice(index, 1);
+      await saveSettingsToCloud();
+      renderBanks();
+    }
+  }
+</script>
+
+</body>
+</html>
