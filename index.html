@@ -63,11 +63,11 @@
     
     body {
       background-color: #fff8ee;
-      background-image: url("coffee-pattern.jpg");
-      background-size: 100% auto;
+      background-image: none;
+      background-size: auto;
       background-position: top center;
-      background-repeat: repeat-y;
-      background-attachment: fixed;
+      background-repeat: no-repeat;
+      background-attachment: scroll;
       color: var(--text);
       padding-bottom: 40px;
     }
@@ -137,7 +137,8 @@
     .brand h2 { font-size: 18px; font-weight: 800; color: var(--primary); }
     
     .coffee-hero { max-width:900px; margin:16px auto 0; height:clamp(150px, 38vw, 265px); overflow:hidden; position:relative; border-radius:24px 10px 24px 10px; border:2px solid #b88a65; background:#e7d2bd; box-shadow:0 8px 22px #70452f20; }
-    .coffee-hero img { width:100%; height:100%; object-fit:cover; object-position:center 58%; display:block; }
+    .coffee-hero img { width:100%; height:100%; object-fit:contain; object-position:center; display:block; }
+    .logo-hero { height:clamp(130px, 28vw, 210px); background:#fff; border:1px solid #eee; }
     .coffee-hero-caption { position:absolute; bottom:10px; right:12px; background:rgba(61,35,23,.82); color:#fff5e9; border-radius:20px; padding:7px 13px; font-weight:800; font-size:clamp(12px, 2.6vw, 16px); }
     .install-note { position:fixed; z-index:1200; bottom:18px; left:14px; right:14px; max-width:420px; margin:auto; background:#70452f; color:#fff7ef; border:1px solid #f7e6d3; border-radius:14px; padding:12px 14px; box-shadow:0 8px 28px #49332644; display:flex; align-items:center; gap:10px; }
     .install-note[hidden] { display:none; }
@@ -290,7 +291,7 @@
   </div>
 
   <div id="splash-screen">
-    <img id="splash-img" src="coffee-logo.jpg" class="splash-logo" alt="شعار المتجر">
+    <img id="splash-img" src="brand-logo.jpg" class="splash-logo" alt="شعار المتجر">
     <div class="splash-title">د. رشفه ملكيه<br><span style="font-size: 14px; color:var(--primary); font-weight:600;">قهوتك بمذاق ملكي ☕</span></div>
   </div>
 
@@ -301,14 +302,14 @@
   </a>
 
   <div id="toast" class="toast-notification">
-    <img id="toast-img" src="" alt="شعار">
+    <img id="toast-img" src="" alt="شعار" loading="lazy">
     <span>تمت إضافة المنتج إلى السلة ☕</span>
   </div>
 
   <header>
     <div class="header-top">
       <div class="brand">
-        <img id="header-logo" src="coffee-logo.jpg" alt="شعار المتجر">
+        <img id="header-logo" src="brand-logo.jpg" alt="شعار المتجر">
         <div>
           <h2>د. رشفه ملكيه</h2>
           <span style="font-size:11px; color:var(--primary); font-weight:700;">متجر القهوة المختصة</span>
@@ -317,7 +318,7 @@
       <button class="cart-btn" onclick="toggleCart()">🛒 <span id="cart-count" class="cart-badge">0</span></button>
     </div>
 
-    <div class="coffee-hero" aria-label="إعلان القهوة من د. رشفه ملكيه"><img id="hero-ad-image" src="coffee-ad-banner.jpg" alt="إعلان قهوة مختارة بعناية من د. رشفه ملكيه"><div class="coffee-hero-caption">قهوتك... لحظة مزاج ملكية ☕</div></div>
+    <div class="coffee-hero logo-hero" aria-label="شعار د. رشفه ملكيه"><img id="hero-ad-image" src="brand-logo.jpg" alt="شعار د. رشفه ملكيه"></div>
 
     <div class="search-container">
       <input type="text" id="search-input" class="search-input" placeholder="ابحث عن القهوة ومنتجاتها..." oninput="filterProducts()">
@@ -584,11 +585,11 @@
     }
 
     function renderStoreInfo() {
-      const logo = storeData.logo || "coffee-logo.jpg";
+      const logo = storeData.logo || "brand-logo.jpg";
       document.getElementById('splash-img').src = logo;
       document.getElementById('header-logo').src = logo;
       document.getElementById('toast-img').src = logo;
-      document.getElementById('hero-ad-image').src = storeData.heroAdImage || 'coffee-ad-banner.jpg';
+      const heroLogo = document.getElementById('hero-ad-image'); if (heroLogo) heroLogo.src = 'brand-logo.jpg';
       document.getElementById('whatsapp-float-btn').href = `https://wa.me/${storeData.phone || '966553804010'}`;
 
       const storeLocBox = document.getElementById('store-location-box');
@@ -955,9 +956,8 @@
       window.matchMedia('(display-mode: standalone)').addEventListener?.('change', () => {
         if (isRunningAsApp()) hideInstallBox();
       });
-      setTimeout(() => {
-        if (!isInstalled() && !sessionStorage.getItem('coffeeInstallDismissed')) note.hidden = false;
-      }, 1800);
+      // لا نعرض رسالة تثبيت تلقائياً داخل صفحة المتجر؛ تظهر فقط عند توفر خيار تثبيت فعلي.
+      window.addEventListener('beforeinstallprompt', () => { if (!isInstalled() && !sessionStorage.getItem('coffeeInstallDismissed')) note.hidden = false; });
       close.addEventListener('click', () => { try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
     })();
 

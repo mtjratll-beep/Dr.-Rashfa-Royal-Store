@@ -1,5 +1,5 @@
-const CACHE='rashfa-coffee-v4';
-const ASSETS=['./','./index.html','./manifest.json','./coffee-banner.png','./coffee-logo.jpg','./coffee-ad-banner.jpg','./coffee-pattern.jpg'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('./index.html'))));});
+const CACHE='rashfa-store-v5';
+const CORE=['./','./index.html','./admin.html','./manifest.json','./brand-logo.jpg'];
+self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(CACHE); await Promise.all(CORE.map(async url=>{try{const r=await fetch(url,{cache:'reload'});if(r.ok)await cache.put(url,r)}catch(e){}})); await self.skipWaiting()})()));
+self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key!==CACHE)await caches.delete(key);await self.clients.claim()})()));
+self.addEventListener('fetch',event=>{if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;event.respondWith((async()=>{const cached=await caches.match(event.request);if(cached)return cached;try{const response=await fetch(event.request);if(response.ok&&event.request.destination!=='document'){const cache=await caches.open(CACHE);cache.put(event.request,response.clone())}return response}catch(e){return caches.match('./index.html')}})())});
