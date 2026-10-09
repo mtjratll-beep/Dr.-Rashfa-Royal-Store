@@ -179,6 +179,14 @@
   </div>
 
   <div class="section-box">
+    <div class="section-title">🖼️ إعلان الواجهة العلوي</div>
+    <p class="note">اختر صورة الإعلان من معرض الصور في جهازك. هذا الإعلان مستقل تماماً عن شعار التطبيق.</p>
+    <input type="file" id="hero-ad-file" accept="image/*" onchange="uploadHeroAdImage(event)">
+    <img id="hero-ad-preview" class="preview-img" src="coffee-ad-banner.jpg" alt="معاينة الإعلان العلوي">
+    <button class="btn btn-danger" type="button" onclick="removeHeroAdImage()" style="margin-top:10px;">استعادة الإعلان الافتراضي</button>
+  </div>
+
+  <div class="section-box">
     <div class="section-title">
       <span>🖼️ إدارة الإعلانات المتحركة</span>
       <span style="font-size:12px; color:var(--text-muted);" id="slider-count">0 / 10</span>
@@ -492,7 +500,7 @@
   async function removeHeroAdImage() {
     if (!confirm('هل تريد إعادة صورة الإعلان الافتراضية؟')) return;
     delete storeData.heroAdImage;
-    document.getElementById('hero-ad-preview').src = 'brand-logo.jpg';
+    document.getElementById('hero-ad-preview').src = 'coffee-ad-banner.jpg';
     await saveSettingsToCloud();
     alert('تمت إعادة صورة الإعلان الافتراضية.');
   }

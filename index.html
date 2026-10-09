@@ -137,7 +137,7 @@
     .brand h2 { font-size: 18px; font-weight: 800; color: var(--primary); }
     
     .coffee-hero { max-width:900px; margin:16px auto 0; height:clamp(150px, 38vw, 265px); overflow:hidden; position:relative; border-radius:24px 10px 24px 10px; border:2px solid #b88a65; background:#e7d2bd; box-shadow:0 8px 22px #70452f20; }
-    .coffee-hero img { width:100%; height:100%; object-fit:contain; object-position:center; display:block; }
+    .coffee-hero img { width:100%; height:100%; object-fit:cover; object-position:center 58%; display:block; }
     .logo-hero { height:clamp(130px, 28vw, 210px); background:#fff; border:1px solid #eee; }
     .coffee-hero-caption { position:absolute; bottom:10px; right:12px; background:rgba(61,35,23,.82); color:#fff5e9; border-radius:20px; padding:7px 13px; font-weight:800; font-size:clamp(12px, 2.6vw, 16px); }
     .install-note { position:fixed; z-index:1200; bottom:18px; left:14px; right:14px; max-width:420px; margin:auto; background:#70452f; color:#fff7ef; border:1px solid #f7e6d3; border-radius:14px; padding:12px 14px; box-shadow:0 8px 28px #49332644; display:flex; align-items:center; gap:10px; }
@@ -168,6 +168,11 @@
 
     .container { padding: 0 12px; max-width: 900px; margin: 0 auto; }
     
+    .cloud-loading { display:flex; align-items:center; justify-content:center; gap:10px; padding:14px 10px; margin:8px 0 12px; color:var(--primary); font-size:13px; font-weight:700; text-align:center; }
+    .cloud-loading[hidden] { display:none !important; }
+    .cloud-spinner { width:25px; height:25px; border:3px solid #ead9c9; border-top-color:var(--primary); border-right-color:var(--primary); border-radius:50%; animation:cloud-spin .75s linear infinite; flex:0 0 auto; }
+    @keyframes cloud-spin { to { transform:rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .cloud-spinner { animation-duration:2s; } }
     .products-grid { 
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
@@ -331,6 +336,8 @@
   </div>
 
   <div class="container">
+    <div class="coffee-hero" aria-label="إعلان المتجر الرئيسي"><img id="hero-ad-image" src="coffee-ad-banner.jpg" alt="إعلان المتجر" fetchpriority="high"><div class="coffee-hero-caption">قهوتك... لحظة مزاج ملكية ☕</div></div>
+
     <div class="ticker-wrap">
       <div class="ticker-move">
         <div class="ticker-item">☕ أهلاً بكم في د. رشفه ملكيه — قهوة مختارة بمذاق ملكي</div>
@@ -338,10 +345,15 @@
       </div>
     </div>
 
+
     <div class="slider-container" id="slider-box">
       <div class="slider-track" id="slider-main"></div>
     </div>
 
+    <div id="cloud-loading" class="cloud-loading" role="status" aria-live="polite">
+      <span class="cloud-spinner" aria-hidden="true"></span>
+      <span>تحميل المنتجات</span>
+    </div>
     <div class="products-grid" id="products-container"></div>
 
     <div class="reviews-section">
@@ -554,6 +566,8 @@
       // عرض منتجات القهوة فقط؛ لا يتم حذف أو تعديل أي بيانات في قاعدة البيانات.
       allProducts = allProducts.filter(isCoffeeProduct);
       initUI();
+      const cloudLoading = document.getElementById('cloud-loading');
+      if (cloudLoading) cloudLoading.hidden = true;
     }
 
     function isCoffeeProduct(p) {
@@ -587,6 +601,7 @@
       document.getElementById('splash-img').src = logo;
       document.getElementById('header-logo').src = logo;
       document.getElementById('toast-img').src = logo;
+      document.getElementById('hero-ad-image').src = storeData.heroAdImage || 'coffee-ad-banner.jpg';
       document.getElementById('whatsapp-float-btn').href = `https://wa.me/${storeData.phone || '966553804010'}`;
 
       const storeLocBox = document.getElementById('store-location-box');
