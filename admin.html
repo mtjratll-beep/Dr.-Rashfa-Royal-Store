@@ -177,6 +177,20 @@
     <button class="btn" onclick="saveBasicSettings()">حفظ البيانات الأساسية والموقع 💾</button>
   </div>
 
+  <div class="section-box" style="border-right:6px solid #c79b69;">
+    <div class="section-title">📣 لوحة إعلان الواجهة الرئيسية</div>
+    <p class="note">من هنا يمكنك تغيير عبارتي الإعلان اللتين تظهران فوق صورة القهوة في الصفحة الرئيسية، وسيتم حفظهما في Firebase.</p>
+    <label for="ad-board-title">عنوان الإعلان:</label>
+    <input id="ad-board-title" type="text" maxlength="120" value="إعلان قهوة مختارة بعناية من د. رشفه ملكيه" placeholder="إعلان قهوة مختارة بعناية من د. رشفه ملكيه">
+    <label for="ad-board-subtitle">العبارة الرئيسية:</label>
+    <input id="ad-board-subtitle" type="text" maxlength="120" value="قهوتك... لحظة مزاج ملكية ☕" placeholder="قهوتك... لحظة مزاج ملكية">
+    <div style="margin-top:14px;padding:14px;border-radius:12px;background:linear-gradient(135deg,#fff8ed,#f0dfce);border:1px solid var(--border);text-align:center;">
+      <strong id="ad-board-preview-title">إعلان قهوة مختارة بعناية من د. رشفه ملكيه</strong>
+      <div id="ad-board-preview-subtitle" style="margin-top:6px;color:var(--primary);font-weight:800;">قهوتك... لحظة مزاج ملكية ☕</div>
+    </div>
+    <button class="btn" onclick="saveAdBoard()">💾 حفظ لوحة الإعلان</button>
+  </div>
+
   <div class="section-box">
     <div class="section-title">
       <span>🖼️ إدارة الإعلانات المتحركة</span>
@@ -399,6 +413,9 @@
     document.getElementById('store-phone').value = storeData.phone || "966553804010";
     document.getElementById('store-location-url').value = storeData.locationUrl || "";
     document.getElementById('store-close-reason').value = storeData.closeReason || "";
+    document.getElementById('ad-board-title').value = storeData.adBoardTitle || 'إعلان قهوة مختارة بعناية من د. رشفه ملكيه';
+    document.getElementById('ad-board-subtitle').value = storeData.adBoardSubtitle || 'قهوتك... لحظة مزاج ملكية ☕';
+    updateAdBoardPreview();
     if(storeData.logo) document.getElementById('logo-preview').src = storeData.logo;
     updateStoreStatusUI();
     renderSliders();
@@ -469,6 +486,26 @@
     } catch(e) {
       alert("تعذر قراءة الصورة، اختر صورة أخرى أصغر حجماً.");
     }
+  }
+
+  function updateAdBoardPreview() {
+    const title = document.getElementById('ad-board-title').value.trim() || 'إعلان قهوة مختارة بعناية من د. رشفه ملكيه';
+    const subtitle = document.getElementById('ad-board-subtitle').value.trim() || 'قهوتك... لحظة مزاج ملكية ☕';
+    document.getElementById('ad-board-preview-title').textContent = title;
+    document.getElementById('ad-board-preview-subtitle').textContent = subtitle;
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const title = document.getElementById('ad-board-title');
+    const subtitle = document.getElementById('ad-board-subtitle');
+    if (title) title.addEventListener('input', updateAdBoardPreview);
+    if (subtitle) subtitle.addEventListener('input', updateAdBoardPreview);
+  });
+  async function saveAdBoard() {
+    storeData.adBoardTitle = document.getElementById('ad-board-title').value.trim() || 'إعلان قهوة مختارة بعناية من د. رشفه ملكيه';
+    storeData.adBoardSubtitle = document.getElementById('ad-board-subtitle').value.trim() || 'قهوتك... لحظة مزاج ملكية ☕';
+    await saveSettingsToCloud();
+    updateAdBoardPreview();
+    alert('تم حفظ لوحة الإعلان، وستظهر العبارة الجديدة في واجهة المتجر بعد تحديثها.');
   }
 
   async function saveBasicSettings() {

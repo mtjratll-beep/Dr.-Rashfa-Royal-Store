@@ -317,7 +317,7 @@
       <button class="cart-btn" onclick="toggleCart()">🛒 <span id="cart-count" class="cart-badge">0</span></button>
     </div>
 
-    <div class="coffee-hero" aria-label="إعلان القهوة من د. رشفه ملكيه"><img src="coffee-ad-banner.jpg" alt="إعلان قهوة مختارة بعناية من د. رشفه ملكيه"><div class="coffee-hero-caption">قهوتك... لحظة مزاج ملكية ☕</div></div>
+    <div class="coffee-hero" aria-label="إعلان القهوة من د. رشفه ملكيه"><img src="coffee-ad-banner.jpg" id="coffee-hero-image" alt="إعلان قهوة مختارة بعناية من د. رشفه ملكيه"><div class="coffee-hero-caption"><span id="coffee-hero-title" style="display:block;font-size:.88em;margin-bottom:3px;">إعلان قهوة مختارة بعناية من د. رشفه ملكيه</span><span id="coffee-hero-subtitle">قهوتك... لحظة مزاج ملكية ☕</span></div></div>
 
     <div class="search-container">
       <input type="text" id="search-input" class="search-input" placeholder="ابحث عن القهوة ومنتجاتها..." oninput="filterProducts()">
@@ -584,6 +584,14 @@
     }
 
     function renderStoreInfo() {
+      const adTitle = storeData.adBoardTitle || "إعلان قهوة مختارة بعناية من د. رشفه ملكيه";
+      const adSubtitle = storeData.adBoardSubtitle || "قهوتك... لحظة مزاج ملكية ☕";
+      const adTitleEl = document.getElementById('coffee-hero-title');
+      const adSubtitleEl = document.getElementById('coffee-hero-subtitle');
+      const adImageEl = document.getElementById('coffee-hero-image');
+      if (adTitleEl) adTitleEl.textContent = adTitle;
+      if (adSubtitleEl) adSubtitleEl.textContent = adSubtitle;
+      if (adImageEl) adImageEl.alt = adTitle;
       const logo = storeData.logo || "coffee-logo.jpg";
       document.getElementById('splash-img').src = logo;
       document.getElementById('header-logo').src = logo;
