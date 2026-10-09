@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#4a281b">
+<meta name="theme-color" content="#fff8ee">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
   <title>د. رشفه ملكيه | متجر القهوة</title>
@@ -45,15 +45,15 @@
 
   <style>
     :root {
-      --primary: #6f4028;
-      --primary-hover: #4a281b;
-      --accent: #9a6b4f;
-      --bg: #f7efe5;
+      --primary: #9a6748;
+      --primary-hover: #70452f;
+      --accent: #c08b63;
+      --bg: #fffaf3;
       --card-bg: #ffffff;
-      --text: #39251c;
-      --muted: #795b49;
-      --border: #d8bda5;
-      --star: #b88955;
+      --text: #493326;
+      --muted: #8a705f;
+      --border: #ead7c3;
+      --star: #d5a66f;
       --whatsapp: #25d366;
       --radius: 16px;
       --shadow: 0 4px 20px -2px rgba(80, 48, 30, 0.14);
@@ -62,7 +62,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
     
     body {
-      background-color: #f4eee4;
+      background-color: #fff8ee;
       background-image: url("coffee-pattern.jpg");
       background-size: 100% auto;
       background-position: top center;
@@ -74,7 +74,7 @@
 
     .ticker-wrap {
       width: 100%;
-      background: linear-gradient(90deg, #4a281b, #8b5e3c, #4a281b);
+      background: linear-gradient(90deg, #70452f, #8b5e3c, #70452f);
       color: #ffffff;
       overflow: hidden;
       height: 38px;
@@ -104,7 +104,7 @@
       transition: opacity 0.25s ease, visibility 0.25s; padding: 20px; text-align: center;
     }
     #splash-screen.fade-out { opacity: 0; visibility: hidden; }
-    .splash-logo { width: 150px; height: 150px; object-fit: cover; object-position: center; animation: zoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 28px 28px 12px 28px; border: 3px solid #c9a98e; background: linear-gradient(145deg,#fff5e9,#e7c8a8); box-shadow: 0 10px 28px #4a281b30; padding: 3px; }
+    .splash-logo { width: 150px; height: 150px; object-fit: cover; object-position: center; animation: zoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 28px 28px 12px 28px; border: 3px solid #f7e6d3; background: linear-gradient(145deg,#fff5e9,#f7e6d3); box-shadow: 0 10px 28px #70452f30; padding: 3px; }
     .splash-title { margin-top: 20px; font-size: 22px; font-weight: 800; color: var(--primary); }
 
     @keyframes zoomIn { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -130,18 +130,18 @@
       100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
     }
 
-    header { background: linear-gradient(145deg,#fff8ef 0%,#f0dfce 100%); backdrop-filter: blur(10px); padding: 16px 12px 18px; position: relative; z-index: 100; border: 1px solid #d6b79b; border-bottom: 5px solid #6f4028; border-radius: 0 0 28px 28px; box-shadow: 0 8px 22px rgba(74,40,27,.14); }
+    header { background: linear-gradient(145deg,#fff8ef 0%,#f0dfce 100%); backdrop-filter: blur(10px); padding: 16px 12px 18px; position: relative; z-index: 100; border: 1px solid #d6b79b; border-bottom: 5px solid #9a6748; border-radius: 0 0 28px 28px; box-shadow: 0 8px 22px rgba(74,40,27,.14); }
     .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 0 auto; }
     .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
-    .brand img { width: 60px; height: 60px; object-fit: cover; object-position: center; border-radius: 18px 18px 7px 18px; border: 2px solid #b88a65; background: #fff5e9; padding: 2px; box-shadow: 0 4px 10px #4a281b22; }
+    .brand img { width: 60px; height: 60px; object-fit: cover; object-position: center; border-radius: 18px 18px 7px 18px; border: 2px solid #b88a65; background: #fff5e9; padding: 2px; box-shadow: 0 4px 10px #70452f22; }
     .brand h2 { font-size: 18px; font-weight: 800; color: var(--primary); }
     
-    .coffee-hero { max-width:900px; margin:16px auto 0; height:clamp(150px, 38vw, 265px); overflow:hidden; position:relative; border-radius:24px 10px 24px 10px; border:2px solid #b88a65; background:#e7d2bd; box-shadow:0 8px 22px #4a281b20; }
+    .coffee-hero { max-width:900px; margin:16px auto 0; height:clamp(150px, 38vw, 265px); overflow:hidden; position:relative; border-radius:24px 10px 24px 10px; border:2px solid #b88a65; background:#e7d2bd; box-shadow:0 8px 22px #70452f20; }
     .coffee-hero img { width:100%; height:100%; object-fit:cover; object-position:center 58%; display:block; }
     .coffee-hero-caption { position:absolute; bottom:10px; right:12px; background:rgba(61,35,23,.82); color:#fff5e9; border-radius:20px; padding:7px 13px; font-weight:800; font-size:clamp(12px, 2.6vw, 16px); }
-    .install-note { position:fixed; z-index:1200; bottom:18px; left:14px; right:14px; max-width:420px; margin:auto; background:#4a281b; color:#fff7ef; border:1px solid #c9a98e; border-radius:14px; padding:12px 14px; box-shadow:0 8px 28px #39251c44; display:flex; align-items:center; gap:10px; }
+    .install-note { position:fixed; z-index:1200; bottom:18px; left:14px; right:14px; max-width:420px; margin:auto; background:#70452f; color:#fff7ef; border:1px solid #f7e6d3; border-radius:14px; padding:12px 14px; box-shadow:0 8px 28px #49332644; display:flex; align-items:center; gap:10px; }
     .install-note[hidden] { display:none; }
-    .install-note .install-action { background:#f0dfce; color:#4a281b; border:0; border-radius:9px; padding:8px 11px; font-weight:800; white-space:nowrap; cursor:pointer; }
+    .install-note .install-action { background:#f0dfce; color:#70452f; border:0; border-radius:9px; padding:8px 11px; font-weight:800; white-space:nowrap; cursor:pointer; }
     .install-note .install-close { background:transparent; color:#fff; border:0; font-size:20px; cursor:pointer; }
     .install-note .install-copy { flex:1; font-size:13px; line-height:1.5; }
     .search-container { display: flex; align-items: center; margin: 15px auto 0; gap: 10px; max-width: 900px; }
@@ -187,7 +187,7 @@
       cursor: pointer;
       overflow: hidden;
       border-radius: 12px;
-      background: #f7efe5;
+      background: #fffaf3;
       border: 1px solid var(--border);
     }
     .product-img-wrapper img { width: 100%; height: 130px; object-fit: contain; padding: 6px; transition: transform 0.3s ease; }
@@ -208,7 +208,7 @@
     .reviews-section { margin: 35px 0; background: var(--card-bg); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
     .reviews-section h3 { margin-bottom: 16px; font-size: 18px; color: var(--primary); font-weight: 800; }
     .reviews-list { max-height: 240px; overflow-y: auto; margin-bottom: 16px; padding-left: 5px; }
-    .review-item { background: #f7efe5; border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; font-size: 13px; }
+    .review-item { background: #fffaf3; border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; font-size: 13px; }
     .review-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 4px; color: var(--text); }
     .review-stars { color: var(--star); }
     .star-rating { display: flex; gap: 6px; margin-bottom: 12px; direction: ltr; justify-content: flex-end; cursor: pointer; }
@@ -223,7 +223,7 @@
     .modal-header h3 { font-weight: 800; font-size: 18px; color: var(--primary); }
     
     .cart-item { display: flex; align-items: center; gap: 12px; margin: 12px 0; font-size: 14px; border-bottom: 1px solid #fef3c7; padding-bottom: 10px; }
-    .cart-item img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: #f7efe5; }
+    .cart-item img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: #fffaf3; }
     .cart-item-info { flex: 1; }
     .cart-item-title { font-weight: 700; font-size: 14px; }
     .cart-item-price-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -238,13 +238,13 @@
     .qty-btn:hover { background: var(--primary-hover); }
     .qty-input { width: 38px; text-align: center; border: 1px solid var(--border); border-radius: 6px; font-weight: 700; font-size: 13px; padding: 2px 0; }
     
-    .bank-box { background: #f7efe5; border: 1px dashed var(--primary); padding: 16px; border-radius: 12px; margin: 15px 0; }
+    .bank-box { background: #fffaf3; border: 1px dashed var(--primary); padding: 16px; border-radius: 12px; margin: 15px 0; }
     .bank-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
     .bank-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .copy-btn { background: var(--primary); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; }
 
-    .shipping-info-box { background: #f7efe5; border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-top: 12px; text-align: center; font-size: 13px; color: var(--primary); font-weight: 700; }
-    .store-location-card { background: #f7efe5; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 15px; text-align: center; font-size: 13px; }
+    .shipping-info-box { background: #fffaf3; border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-top: 12px; text-align: center; font-size: 13px; color: var(--primary); font-weight: 700; }
+    .store-location-card { background: #fffaf3; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 15px; text-align: center; font-size: 13px; }
     .store-location-card a { color: var(--primary); font-weight: 700; text-decoration: none; }
 
     .btn-submit-whatsapp { background: var(--whatsapp); color: white; width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; transition: 0.2s; }
@@ -349,7 +349,7 @@
       <h3>آراء وتقييمات العملاء</h3>
       <div class="reviews-list" id="reviews-list"></div>
       
-      <div style="background: #f7efe5; padding:16px; border-radius:12px; border:1px solid var(--border);">
+      <div style="background: #fffaf3; padding:16px; border-radius:12px; border:1px solid var(--border);">
         <h4 style="font-size:14px; margin-bottom:10px; color:var(--primary);">أضف رأيك وتقييمك:</h4>
         <input type="text" id="review-name" class="review-form-input" placeholder="اسمك الكريم">
         <div class="star-rating" id="star-rating">
@@ -389,7 +389,7 @@
       <div id="cart-items"></div>
       <div style="margin-top:12px; font-weight:800; text-align:left; font-size:16px; color:var(--primary);" id="cart-total">المجموع: 0</div>
 
-      <div style="margin-top: 15px; background: #f7efe5; padding: 14px; border: 1px solid var(--border); border-radius: 12px;">
+      <div style="margin-top: 15px; background: #fffaf3; padding: 14px; border: 1px solid var(--border); border-radius: 12px;">
         <label style="font-size: 13px; font-weight: 700; color: var(--primary); display:block; margin-bottom:6px;">👤 اسم العميل الكريم:</label>
         <input type="text" id="customer-name" class="review-form-input" placeholder="أدخل اسمك الكامل هنا...">
         <label style="font-size: 13px; font-weight: 700; color: var(--primary); display:block; margin-top:8px; margin-bottom:6px;">📍 موقع التوصيل / العنوان:</label>
@@ -915,26 +915,48 @@
       alert('شكراً لك على تقييمك!');
     }
   
-    // رسالة تثبيت صغيرة قابلة للإغلاق، وزر التثبيت يظهر عند دعم المتصفح.
+    // إخفاء مربع التثبيت نهائياً عند فتح المتجر كتطبيق مثبت.
     (function setupInstallPrompt(){
       const note = document.getElementById('install-note');
       const action = document.getElementById('install-action');
       const message = document.getElementById('install-message');
       const close = document.getElementById('install-close');
       let installPrompt = null;
+      const isRunningAsApp = () => window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches || window.navigator.standalone === true;
+      const isInstalled = () => isRunningAsApp() || localStorage.getItem('coffeeAppInstalled') === '1';
+      const hideInstallBox = () => { note.hidden = true; note.style.display = 'none'; };
+      if (isInstalled()) { hideInstallBox(); }
       close.addEventListener('click', () => { note.hidden = true; });
       action.addEventListener('click', async () => {
+        if (isInstalled()) { hideInstallBox(); return; }
         if (installPrompt) {
           installPrompt.prompt();
-          try { await installPrompt.userChoice; } catch(e) {}
-          installPrompt = null; note.hidden = true;
+          let choice = null;
+          try { choice = await installPrompt.userChoice; } catch(e) {}
+          installPrompt = null;
+          if (choice && choice.outcome === 'accepted') {
+            try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
+            hideInstallBox();
+          }
         } else {
           message.textContent = 'من قائمة المتصفح اختر «إضافة إلى الشاشة الرئيسية» لتثبيت التطبيق.';
         }
       });
-      window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; });
-      window.addEventListener('appinstalled', () => { note.hidden = true; });
-      setTimeout(() => { if (!sessionStorage.getItem('coffeeInstallDismissed')) note.hidden = false; }, 1800);
+      window.addEventListener('beforeinstallprompt', (e) => {
+        if (isInstalled()) { hideInstallBox(); return; }
+        e.preventDefault(); installPrompt = e;
+      });
+      window.addEventListener('appinstalled', () => {
+        try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
+        hideInstallBox();
+      });
+      window.matchMedia('(display-mode: standalone)').addEventListener?.('change', () => {
+        if (isRunningAsApp()) hideInstallBox();
+      });
+      setTimeout(() => {
+        if (!isInstalled() && !sessionStorage.getItem('coffeeInstallDismissed')) note.hidden = false;
+      }, 1800);
       close.addEventListener('click', () => { try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
     })();
 

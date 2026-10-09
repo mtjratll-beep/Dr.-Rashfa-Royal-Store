@@ -41,23 +41,23 @@
 
   <style>
     :root {
-      --primary: #6f4028;
-      --primary-hover: #4a281b;
+      --primary: #9a6748;
+      --primary-hover: #70452f;
       --danger: #ef4444;
       --danger-hover: #dc2626;
       --success: #10b981;
-      --bg-main: #f7efe5;
+      --bg-main: #fffaf3;
       --card-bg: #ffffff;
-      --text-main: #39251c;
-      --text-muted: #795b49;
-      --border: #d8bda5;
+      --text-main: #493326;
+      --text-muted: #8a705f;
+      --border: #ead7c3;
       --shadow: 0 10px 25px -5px rgba(80, 48, 30, 0.14);
       --radius: 16px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
     body {
-      background-color: #f4eee4;
+      background-color: #fff8ee;
       background-image: url("coffee-pattern.jpg");
       background-size: 100% auto;
       background-position: top center;
@@ -104,7 +104,7 @@
     label { font-size: 14px; font-weight: 700; display: block; margin: 12px 0 6px; color: var(--text-muted); }
     input, select, textarea {
       width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px;
-      font-size: 14px; outline: none; background: #f7efe5; transition: all 0.2s; color: var(--text-main);
+      font-size: 14px; outline: none; background: #fffaf3; transition: all 0.2s; color: var(--text-main);
     }
     input:focus, select:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15); }
     
@@ -124,7 +124,7 @@
     .status-closed { background-color: var(--danger); }
     
     .item-card {
-      display: flex; align-items: center; justify-content: space-between; background: #f7efe5;
+      display: flex; align-items: center; justify-content: space-between; background: #fffaf3;
       border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-top: 10px; transition: 0.2s; gap: 10px;
     }
     .item-card:hover { border-color: var(--primary); background: #fff; }
@@ -171,19 +171,19 @@
     <input type="text" id="store-phone" placeholder="مثال: 966553804010">
     <label>📍 رابط موقع المتجر (Google Maps):</label>
     <input type="text" id="store-location-url" placeholder="مثال: https://maps.google.com/?q=...">
-    <label>شعار الموقع (اختر صورة الشعار):</label>
+    <label>شعار الموقع والتطبيق (يظهر في أعلى المتجر وشاشة البداية):</label>
     <input type="file" id="logo-file" accept="image/*" onchange="uploadLogo(event)">
-    <img id="logo-preview" class="preview-img" src="" alt="معاينة الشعار">
+    <img id="logo-preview" class="preview-img" src="" alt="معاينة شعار المتجر والتطبيق"><p class="note">سيتم حفظ الشعار في إعدادات المتجر السحابية ليظهر في واجهة المتجر.</p>
     <button class="btn" onclick="saveBasicSettings()">حفظ البيانات الأساسية والموقع 💾</button>
   </div>
 
   <div class="section-box">
     <div class="section-title">
-      <span>🖼️ السلايدر المتحرك (الإعلانات)</span>
+      <span>🖼️ إدارة الإعلانات المتحركة</span>
       <span style="font-size:12px; color:var(--text-muted);" id="slider-count">0 / 10</span>
     </div>
     <p class="note">📏 المقاس الموصى به لصور الإعلانات: <strong>1200 × 500 بكسل</strong></p>
-    <label style="margin-top:15px;">إضافة صورة إعلان جديدة:</label>
+    <label style="margin-top:15px;">إضافة إعلان متحرك جديد (يظهر تلقائياً في واجهة المتجر):</label>
     <input type="file" id="slider-file" accept="image/*" onchange="addSliderImage(event)">
     <div id="sliders-list" style="margin-top:15px;"></div>
   </div>
@@ -465,7 +465,7 @@
       storeData.logo = base64Img;
       document.getElementById('logo-preview').src = base64Img;
       await saveSettingsToCloud();
-      alert("تم تحديث الشعار بنجاح في السحابة!");
+      alert("تم تحديث شعار المتجر والتطبيق بنجاح، وسيظهر للزوار بعد تحديث الصفحة.");
     } catch(e) {
       alert("تعذر قراءة الصورة، اختر صورة أخرى أصغر حجماً.");
     }

@@ -13,7 +13,7 @@
     {
       "src": "./coffee-logo.jpg",
       "sizes": "any",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any"
     }
   ]
