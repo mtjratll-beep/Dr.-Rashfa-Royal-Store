@@ -177,20 +177,6 @@
     <button class="btn" onclick="saveBasicSettings()">حفظ البيانات الأساسية والموقع 💾</button>
   </div>
 
-  <div class="section-box" style="border-right:6px solid #c79b69;">
-    <div class="section-title">📣 لوحة إعلان الواجهة الرئيسية</div>
-    <p class="note">من هنا يمكنك تغيير عبارتي الإعلان اللتين تظهران فوق صورة القهوة في الصفحة الرئيسية، وسيتم حفظهما في Firebase.</p>
-    <label for="ad-board-title">عنوان الإعلان:</label>
-    <input id="ad-board-title" type="text" maxlength="120" value="إعلان قهوة مختارة بعناية من د. رشفه ملكيه" placeholder="إعلان قهوة مختارة بعناية من د. رشفه ملكيه">
-    <label for="ad-board-subtitle">العبارة الرئيسية:</label>
-    <input id="ad-board-subtitle" type="text" maxlength="120" value="قهوتك... لحظة مزاج ملكية ☕" placeholder="قهوتك... لحظة مزاج ملكية">
-    <div style="margin-top:14px;padding:14px;border-radius:12px;background:linear-gradient(135deg,#fff8ed,#f0dfce);border:1px solid var(--border);text-align:center;">
-      <strong id="ad-board-preview-title">إعلان قهوة مختارة بعناية من د. رشفه ملكيه</strong>
-      <div id="ad-board-preview-subtitle" style="margin-top:6px;color:var(--primary);font-weight:800;">قهوتك... لحظة مزاج ملكية ☕</div>
-    </div>
-    <button class="btn" onclick="saveAdBoard()">💾 حفظ لوحة الإعلان</button>
-  </div>
-
   <div class="section-box">
     <div class="section-title">
       <span>🖼️ إدارة الإعلانات المتحركة</span>
@@ -200,6 +186,15 @@
     <label style="margin-top:15px;">إضافة إعلان متحرك جديد (يظهر تلقائياً في واجهة المتجر):</label>
     <input type="file" id="slider-file" accept="image/*" onchange="addSliderImage(event)">
     <div id="sliders-list" style="margin-top:15px;"></div>
+  </div>
+
+  <div class="section-box">
+    <div class="section-title">🖼️ صورة إعلان الصفحة الرئيسية</div>
+    <p class="note">اختر صورة الإعلان التي تظهر داخل مربع «إعلان قهوة مختارة بعناية من د. رشفه ملكيه» في واجهة المتجر. الصورة تُحفظ في إعدادات المتجر السحابية.</p>
+    <label for="hero-ad-file">إضافة أو تغيير صورة الإعلان:</label>
+    <input type="file" id="hero-ad-file" accept="image/*" onchange="uploadHeroAdImage(event)">
+    <img id="hero-ad-preview" class="preview-img" src="coffee-ad-banner.jpg" alt="معاينة صورة إعلان الصفحة الرئيسية" style="display:block;max-width:100%;max-height:260px;object-fit:contain;margin-top:12px;">
+    <button class="btn btn-danger" type="button" onclick="removeHeroAdImage()">إعادة الصورة الافتراضية</button>
   </div>
 
   <div class="section-box">
@@ -413,10 +408,8 @@
     document.getElementById('store-phone').value = storeData.phone || "966553804010";
     document.getElementById('store-location-url').value = storeData.locationUrl || "";
     document.getElementById('store-close-reason').value = storeData.closeReason || "";
-    document.getElementById('ad-board-title').value = storeData.adBoardTitle || 'إعلان قهوة مختارة بعناية من د. رشفه ملكيه';
-    document.getElementById('ad-board-subtitle').value = storeData.adBoardSubtitle || 'قهوتك... لحظة مزاج ملكية ☕';
-    updateAdBoardPreview();
     if(storeData.logo) document.getElementById('logo-preview').src = storeData.logo;
+    document.getElementById('hero-ad-preview').src = storeData.heroAdImage || 'coffee-ad-banner.jpg';
     updateStoreStatusUI();
     renderSliders();
     renderProducts();
@@ -488,24 +481,29 @@
     }
   }
 
-  function updateAdBoardPreview() {
-    const title = document.getElementById('ad-board-title').value.trim() || 'إعلان قهوة مختارة بعناية من د. رشفه ملكيه';
-    const subtitle = document.getElementById('ad-board-subtitle').value.trim() || 'قهوتك... لحظة مزاج ملكية ☕';
-    document.getElementById('ad-board-preview-title').textContent = title;
-    document.getElementById('ad-board-preview-subtitle').textContent = subtitle;
+  async function uploadHeroAdImage(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('يرجى اختيار ملف صورة صالح.'); event.target.value=''; return; }
+    try {
+      // ضغط الصورة حتى تناسب الحفظ في إعدادات Firestore.
+      const imageData = await processFile(file, 900);
+      storeData.heroAdImage = imageData;
+      document.getElementById('hero-ad-preview').src = imageData;
+      await saveSettingsToCloud();
+      alert('تم حفظ صورة إعلان الصفحة الرئيسية. افتح المتجر أو حدّثه لمشاهدة الصورة الجديدة.');
+    } catch (e) {
+      console.error('تعذر حفظ صورة الإعلان:', e);
+      alert('تعذر تجهيز الصورة. جرّب صورة أصغر حجماً.');
+    } finally { event.target.value = ''; }
   }
-  document.addEventListener('DOMContentLoaded', () => {
-    const title = document.getElementById('ad-board-title');
-    const subtitle = document.getElementById('ad-board-subtitle');
-    if (title) title.addEventListener('input', updateAdBoardPreview);
-    if (subtitle) subtitle.addEventListener('input', updateAdBoardPreview);
-  });
-  async function saveAdBoard() {
-    storeData.adBoardTitle = document.getElementById('ad-board-title').value.trim() || 'إعلان قهوة مختارة بعناية من د. رشفه ملكيه';
-    storeData.adBoardSubtitle = document.getElementById('ad-board-subtitle').value.trim() || 'قهوتك... لحظة مزاج ملكية ☕';
+
+  async function removeHeroAdImage() {
+    if (!confirm('هل تريد إعادة صورة الإعلان الافتراضية؟')) return;
+    delete storeData.heroAdImage;
+    document.getElementById('hero-ad-preview').src = 'coffee-ad-banner.jpg';
     await saveSettingsToCloud();
-    updateAdBoardPreview();
-    alert('تم حفظ لوحة الإعلان، وستظهر العبارة الجديدة في واجهة المتجر بعد تحديثها.');
+    alert('تمت إعادة صورة الإعلان الافتراضية.');
   }
 
   async function saveBasicSettings() {
