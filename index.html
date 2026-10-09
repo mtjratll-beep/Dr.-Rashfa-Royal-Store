@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
   <title>د. رشفه ملكيه | متجر القهوة</title>
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+  <link rel="preload" as="image" href="./brand-logo.jpg" fetchpriority="high">
   
   <!-- Firebase SDKs -->
   <script type="module">
@@ -63,11 +63,11 @@
     
     body {
       background-color: #fff8ee;
-      background-image: none;
-      background-size: auto;
+      background-image: url("coffee-pattern.jpg");
+      background-size: 100% auto;
       background-position: top center;
-      background-repeat: no-repeat;
-      background-attachment: scroll;
+      background-repeat: repeat-y;
+      background-attachment: fixed;
       color: var(--text);
       padding-bottom: 40px;
     }
@@ -318,8 +318,6 @@
       <button class="cart-btn" onclick="toggleCart()">🛒 <span id="cart-count" class="cart-badge">0</span></button>
     </div>
 
-    <div class="coffee-hero logo-hero" aria-label="شعار د. رشفه ملكيه"><img id="hero-ad-image" src="brand-logo.jpg" alt="شعار د. رشفه ملكيه"></div>
-
     <div class="search-container">
       <input type="text" id="search-input" class="search-input" placeholder="ابحث عن القهوة ومنتجاتها..." oninput="filterProducts()">
     </div>
@@ -442,7 +440,7 @@
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       if (splash) splash.classList.add('fade-out');
-    }, 700);
+    }, 250);
     if (window.db) fetchStoreDataFromCloud();
     else window.addEventListener('firebase-ready', fetchStoreDataFromCloud, { once: true });
 
@@ -589,7 +587,6 @@
       document.getElementById('splash-img').src = logo;
       document.getElementById('header-logo').src = logo;
       document.getElementById('toast-img').src = logo;
-      const heroLogo = document.getElementById('hero-ad-image'); if (heroLogo) heroLogo.src = 'brand-logo.jpg';
       document.getElementById('whatsapp-float-btn').href = `https://wa.me/${storeData.phone || '966553804010'}`;
 
       const storeLocBox = document.getElementById('store-location-box');
