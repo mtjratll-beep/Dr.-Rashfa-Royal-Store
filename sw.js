@@ -1,5 +1,5 @@
 // Cache-first for local assets: instant repeat visits and faster app startup.
-const CACHE = 'rashfa-store-v7';
+const CACHE = 'rashfa-store-v10';
 const CORE = ['./', './index.html', './admin.html', './manifest.json', './brand-logo.jpg', './coffee-ad-banner.jpg'];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

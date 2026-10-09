@@ -140,14 +140,11 @@
     .coffee-hero img { width:100%; height:100%; object-fit:cover; object-position:center 58%; display:block; }
     .logo-hero { height:clamp(130px, 28vw, 210px); background:#fff; border:1px solid #eee; }
     .coffee-hero-caption { position:absolute; bottom:10px; right:12px; background:rgba(61,35,23,.82); color:#fff5e9; border-radius:20px; padding:7px 13px; font-weight:800; font-size:clamp(12px, 2.6vw, 16px); }
-    .install-note { position:fixed; z-index:1200; bottom: max(14px, env(safe-area-inset-bottom)); left:14px; right:14px; max-width:430px; margin:auto; background:linear-gradient(135deg,#70452f,#4e3023); color:#fff7ef; border:1px solid #e6c8a9; border-radius:18px; padding:14px; box-shadow:0 12px 34px #2d1b1366; display:flex; align-items:center; gap:10px; animation:installSlideUp .35s ease-out; }
-    @keyframes installSlideUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
-    .install-note .install-copy strong { font-size:14px; }
-    .install-note .install-copy span { color:#f5e4d4; }
-    .install-note .install-action { box-shadow:0 3px 0 #c8a98e; }
+    .install-note { position:fixed; z-index:1200; bottom:18px; left:14px; right:14px; max-width:360px; margin:auto; background:#70452f; color:#fff7ef; border:1px solid #f7e6d3; border-radius:14px; padding:14px; box-shadow:0 8px 28px #49332644; display:flex; flex-direction:column; align-items:stretch; text-align:center; gap:9px; }
     .install-note[hidden] { display:none; }
     .install-note .install-action { background:#f0dfce; color:#70452f; border:0; border-radius:9px; padding:8px 11px; font-weight:800; white-space:nowrap; cursor:pointer; }
-    .install-note .install-close { background:transparent; color:#fff; border:0; font-size:20px; cursor:pointer; }
+    .install-note .install-close { position:absolute; top:5px; left:8px; background:transparent; color:#fff; border:0; font-size:20px; cursor:pointer; }
+    .install-note .install-skip { background:transparent; color:#fff7ef; border:1px solid #d7b69c; border-radius:9px; padding:7px 11px; font-weight:700; cursor:pointer; }
     .install-note .install-copy { flex:1; font-size:13px; line-height:1.5; }
     .search-container { display: flex; align-items: center; margin: 15px auto 0; gap: 10px; max-width: 900px; }
     .search-input { flex: 1; padding: 12px 18px; border: 1.5px solid var(--border); border-radius: 12px; outline: none; background: #fbf5ed; transition: 0.2s; font-size: 14px; color: var(--text); }
@@ -172,11 +169,10 @@
 
     .container { padding: 0 12px; max-width: 900px; margin: 0 auto; }
     
-    .cloud-loading { display:flex; align-items:center; justify-content:center; gap:10px; padding:14px 10px; margin:8px 0 12px; color:var(--primary); font-size:13px; font-weight:700; text-align:center; }
-    .cloud-loading[hidden] { display:none !important; }
-    .cloud-spinner { width:25px; height:25px; border:3px solid #ead9c9; border-top-color:var(--primary); border-right-color:var(--primary); border-radius:50%; animation:cloud-spin .75s linear infinite; flex:0 0 auto; }
-    @keyframes cloud-spin { to { transform:rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) { .cloud-spinner { animation-duration:2s; } }
+    .products-loading { grid-column: 1 / -1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:32px 16px; color:var(--primary); font-weight:800; text-align:center; min-height:120px; }
+    .products-loading .loading-arrows { width:34px; height:34px; border:3px solid #ead7c3; border-top-color:#9a6748; border-right-color:#c08b63; border-radius:50%; animation:productsSpin .75s linear infinite; }
+    @keyframes productsSpin { to { transform:rotate(360deg); } }
+
     .products-grid { 
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
@@ -279,18 +275,20 @@
     }
 
     .toast-notification {
-      position: fixed; bottom: -110px; left: 50%; transform: translateX(-50%);
+      position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%;
       width: max-content; max-width: calc(100vw - 28px); box-sizing: border-box;
-      background: #fffdf9; color: #493021; padding: 12px 15px; border: 1px solid #ead8c6; border-radius: 18px;
-      display: flex; align-items: center; gap: 11px; box-shadow: 0 12px 35px rgba(65,39,22,.22);
-      z-index: 9999; transition: bottom .35s cubic-bezier(.175,.885,.32,1.275); font-size: 14px; font-weight: 700; direction: rtl;
+      transform: translate(-50%, -24px) scale(.96); opacity: 0; visibility: hidden;
+      background: linear-gradient(135deg, #fffdf7 0%, #fff1d2 100%); color: #493016;
+      padding: 11px 16px 11px 12px; border: 1px solid rgba(174, 124, 45, .45); border-radius: 16px;
+      display: flex; align-items: center; gap: 11px;
+      box-shadow: 0 10px 32px rgba(50, 30, 8, .22), 0 2px 8px rgba(174, 124, 45, .12);
+      z-index: 99999; transition: transform .32s cubic-bezier(.2,.8,.2,1), opacity .25s ease, visibility .25s;
+      font-size: 14px; font-weight: 800; line-height: 1.5; direction: rtl;
     }
-    .toast-notification.show { bottom: 24px; }
-    .toast-notification img { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; object-fit: cover; background: #f5e8db; }
-    .toast-copy { display:flex; flex-direction:column; gap:4px; min-width:0; }
-    .toast-copy strong { font-size:13px; line-height:1.4; }
-    .toast-copy small { color:#8a6b56; font-size:11px; font-weight:500; }
-    .toast-check { display:flex; align-items:center; justify-content:center; width:25px; height:25px; flex:0 0 25px; border-radius:50%; background:#e6f5e8; color:#258044; font-size:15px; }
+    .toast-notification.show { transform: translate(-50%, 0) scale(1); opacity: 1; visibility: visible; }
+    .toast-notification img { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; object-fit: cover; background: #fff; border: 1px solid rgba(174, 124, 45, .25); }
+    #toast-message { overflow-wrap: anywhere; }
+    @media (max-width: 420px) { .toast-notification { max-width: calc(100vw - 20px); padding: 9px 12px 9px 10px; font-size: 13px; gap: 9px; } .toast-notification img { width: 38px; height: 38px; flex-basis: 38px; } }
 
     footer { text-align: center; padding: 24px; font-size: 14px; color: var(--muted); background: var(--card-bg); margin-top: 40px; border-top: 1px solid var(--border); line-height: 1.8; }
     footer strong { color: var(--primary); font-size: 15px; }
@@ -315,10 +313,9 @@
     </svg>
   </a>
 
-  <div id="toast" class="toast-notification" role="status" aria-live="polite">
-    <img id="toast-img" src="brand-logo.jpg" alt="صورة المنتج">
-    <div class="toast-copy"><strong id="toast-title">تمت إضافة المنتج إلى السلة</strong><small id="toast-subtitle">أصبح المنتج في سلتك ☕</small></div>
-    <span class="toast-check" aria-hidden="true">✓</span>
+  <div id="toast" class="toast-notification">
+    <img id="toast-img" src="" alt="صورة المنتج" loading="lazy">
+    <span id="toast-message">تمت إضافة المنتج إلى السلة ☕</span>
   </div>
 
   <header>
@@ -342,6 +339,8 @@
   <div id="install-note" class="install-note" hidden role="dialog" aria-label="تثبيت التطبيق">
     <div class="install-copy"><strong>☕ د. رشفه ملكيه</strong><br><span id="install-message">ثبّت التطبيق لتصل إلى قهوتك المفضلة بسهولة.</span></div>
     <button id="install-action" class="install-action" type="button">تثبيت التطبيق</button>
+    <div style="font-size:12px;line-height:1.5;color:#f7e6d3">يمكنك تثبيت التطبيق للوصول إليه بسرعة في المرات القادمة.</div>
+    <button id="install-skip" class="install-skip" type="button">تخطي</button>
     <button id="install-close" class="install-close" type="button" aria-label="إغلاق">×</button>
   </div>
 
@@ -360,10 +359,6 @@
       <div class="slider-track" id="slider-main"></div>
     </div>
 
-    <div id="cloud-loading" class="cloud-loading" role="status" aria-live="polite">
-      <span class="cloud-spinner" aria-hidden="true"></span>
-      <span>تحميل المنتجات</span>
-    </div>
     <div class="products-grid" id="products-container"></div>
 
     <div class="reviews-section">
@@ -451,13 +446,13 @@
     };
 
     let allProducts = [];
+    let productsLoading = true;
     let cart = [];
     let selectedRating = 5;
     let currentSlide = 0;
     let sliderInterval = null;
 
-    // افتح الواجهة فوراً؛ لا ننتظر Firebase حتى تظهر الصفحة.
-    // بيانات السحابة تُضاف تلقائياً بعد الاتصال.
+    // افتح الواجهة فوراً، واعرض مؤشر تحميل المنتجات حتى اكتمال جلبها.
     initUI();
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
@@ -575,9 +570,8 @@
       }
       // عرض منتجات القهوة فقط؛ لا يتم حذف أو تعديل أي بيانات في قاعدة البيانات.
       allProducts = allProducts.filter(isCoffeeProduct);
+      productsLoading = false;
       initUI();
-      const cloudLoading = document.getElementById('cloud-loading');
-      if (cloudLoading) cloudLoading.hidden = true;
     }
 
     function isCoffeeProduct(p) {
@@ -610,7 +604,7 @@
       const logo = storeData.logo || "brand-logo.jpg";
       document.getElementById('splash-img').src = logo;
       document.getElementById('header-logo').src = logo;
-      document.getElementById('toast-img').src = logo;
+      // الشعار يستخدم في الواجهة فقط؛ إشعار السلة يعرض صورة المنتج الذي أضيف.
       document.getElementById('hero-ad-image').src = storeData.heroAdImage || 'coffee-ad-banner.jpg';
       document.getElementById('whatsapp-float-btn').href = `https://wa.me/${storeData.phone || '966553804010'}`;
 
@@ -651,6 +645,10 @@
     function renderProducts(items) {
       const container = document.getElementById('products-container');
       container.innerHTML = '';
+      if (productsLoading) {
+        container.innerHTML = '<div class="products-loading" role="status" aria-live="polite"><span class="loading-arrows" aria-hidden="true"></span><span>تحميل المنتجات</span></div>';
+        return;
+      }
       if(!items || items.length === 0) {
         container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--muted);">لا توجد منتجات حالياً</p>';
         return;
@@ -708,19 +706,15 @@
         return;
       }
       const product = allProducts.find(p => String(p.id) === String(id));
-      if (!product) {
-        console.warn("تعذر العثور على المنتج لإضافته إلى السلة:", id);
-        return;
-      }
-      const productId = String(product.id);
-      const existing = cart.find(item => String(item.id) === productId);
+      if (!product) { showToast('تعذر العثور على المنتج، حدّث قائمة المنتجات ثم حاول مجددًا.'); return; }
+      const existing = cart.find(item => String(item.id) === String(id));
       if (existing) {
         existing.qty += 1;
       } else {
-        cart.push({ id: productId, qty: 1 });
+        cart.push({ id: id, qty: 1 });
       }
       updateCartUI();
-      showToast(product);
+      showToast(`تمت إضافة ${product.name} إلى السلة`, product.img);
     }
 
     function updateQuantity(id, delta) {
@@ -749,19 +743,16 @@
       updateCartUI();
     }
 
-    let toastTimer;
-    function showToast(product) {
+    let toastTimer = null;
+    function showToast(message = 'تمت إضافة المنتج إلى السلة ☕', image = 'brand-logo.jpg') {
       const toast = document.getElementById('toast');
-      const image = document.getElementById('toast-img');
-      const title = document.getElementById('toast-title');
-      const subtitle = document.getElementById('toast-subtitle');
-      image.src = (product && product.img) ? product.img : 'brand-logo.jpg';
-      image.alt = product ? String(product.name || 'صورة المنتج') : 'صورة المنتج';
-      title.textContent = product ? `تمت إضافة ${product.name || 'المنتج'} إلى السلة` : 'تمت إضافة المنتج إلى السلة';
-      subtitle.textContent = 'تمت الإضافة بنجاح ☕';
+      const img = document.getElementById('toast-img');
+      const label = document.getElementById('toast-message');
+      if (img) img.src = image || 'brand-logo.jpg';
+      if (label) label.textContent = message;
       toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2600);
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
     }
 
     function updateCartUI() {
@@ -954,24 +945,21 @@
       alert('شكراً لك على تقييمك!');
     }
   
-    // مربع تثبيت صغير أسفل الصفحة؛ زر التخطي يخفيه لهذه الجلسة.
+    // إخفاء مربع التثبيت نهائياً عند فتح المتجر كتطبيق مثبت.
     (function setupInstallPrompt(){
       const note = document.getElementById('install-note');
       const action = document.getElementById('install-action');
       const message = document.getElementById('install-message');
       const close = document.getElementById('install-close');
+      const skip = document.getElementById('install-skip');
       let installPrompt = null;
       const isRunningAsApp = () => window.matchMedia('(display-mode: standalone)').matches ||
         window.matchMedia('(display-mode: fullscreen)').matches || window.navigator.standalone === true;
-      const isInstalled = () => isRunningAsApp();
-      const dismissed = () => { try { return sessionStorage.getItem('coffeeInstallDismissed') === '1'; } catch(e) { return false; } };
-      const hideInstallBox = () => { note.hidden = true; };
-      const showInstallBox = () => { if (!isInstalled() && !dismissed()) { note.hidden = false; note.style.display = 'flex'; } };
-      if (isInstalled()) hideInstallBox(); else if (!dismissed()) setTimeout(showInstallBox, 700);
-      close.addEventListener('click', () => {
-        hideInstallBox();
-        try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {}
-      });
+      const isInstalled = () => isRunningAsApp() || localStorage.getItem('coffeeAppInstalled') === '1';
+      const hideInstallBox = () => { note.hidden = true; note.style.display = 'none'; };
+      if (isInstalled()) { hideInstallBox(); }
+      close.addEventListener('click', () => { note.hidden = true; });
+      skip.addEventListener('click', () => { note.hidden = true; try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
       action.addEventListener('click', async () => {
         if (isInstalled()) { hideInstallBox(); return; }
         if (installPrompt) {
@@ -979,18 +967,35 @@
           let choice = null;
           try { choice = await installPrompt.userChoice; } catch(e) {}
           installPrompt = null;
-          if (choice && choice.outcome === 'accepted') hideInstallBox();
+          if (choice && choice.outcome === 'accepted') {
+            try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
+            hideInstallBox();
+          }
         } else {
-          message.textContent = 'لتثبيت التطبيق، افتح قائمة المتصفح ثم اختر «إضافة إلى الشاشة الرئيسية». ';
+          message.textContent = 'من قائمة المتصفح اختر «إضافة إلى الشاشة الرئيسية» لتثبيت التطبيق.';
         }
       });
       window.addEventListener('beforeinstallprompt', (e) => {
         if (isInstalled()) { hideInstallBox(); return; }
-        e.preventDefault(); installPrompt = e; showInstallBox();
+        e.preventDefault(); installPrompt = e;
       });
-      window.addEventListener('appinstalled', hideInstallBox);
-      const displayMode = window.matchMedia('(display-mode: standalone)');
-      displayMode.addEventListener?.('change', () => { if (isRunningAsApp()) hideInstallBox(); });
+      window.addEventListener('appinstalled', () => {
+        try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
+        hideInstallBox();
+      });
+      window.matchMedia('(display-mode: standalone)').addEventListener?.('change', () => {
+        if (isRunningAsApp()) hideInstallBox();
+      });
+      // إظهار مربع تثبيت صغير أسفل الشاشة ما لم يكن التطبيق مثبتاً أو اختار المستخدم تخطيه.
+      const showInstallBoxIfNeeded = () => {
+        if (!isInstalled() && !sessionStorage.getItem('coffeeInstallDismissed')) {
+          note.hidden = false;
+          note.style.display = 'flex';
+        }
+      };
+      window.addEventListener('beforeinstallprompt', showInstallBoxIfNeeded);
+      setTimeout(showInstallBoxIfNeeded, 900);
+      close.addEventListener('click', () => { hideInstallBox(); try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
     })();
 
     if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
