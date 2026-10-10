@@ -508,9 +508,9 @@
     }
 
     async function fetchStoreDataFromCloud() {
-      // احتفظ بآخر نسخة معروضة إلى أن تصل البيانات السحابية، لتجنب شاشة فارغة مع الشبكة البطيئة.
-      const hadCachedProducts = Array.isArray(allProducts) && allProducts.length > 0;
-      if (!hadCachedProducts) allProducts = [];
+      // احتفظ بالنسخة المحلية كخيار احتياطي فقط؛ لا تدمجها مع منتجات السحابة حتى لا تتكرر البطاقات.
+      const cachedProducts = Array.isArray(allProducts) ? [...allProducts] : [];
+      const cloudProducts = [];
       if (!Array.isArray(storeData.reviews)) storeData.reviews = [];
       try {
         // 1) إعدادات المتجر: نقرأ البنية الحالية والقديمة معاً.
@@ -528,16 +528,21 @@
 
         // 2) المنتجات: المصدر الذي ظهر في Firebase عندك هو «منتجات».
         const seen = new Set();
+        const productIdentity = (p) => [
+          String(p.name || '').trim().toLocaleLowerCase(),
+          String(p.price ?? '').trim(),
+          String(p.img || '').trim().split('?')[0].toLocaleLowerCase()
+        ].join('|');
         const addProduct = (raw, source, docId) => {
           if (!raw || typeof raw !== 'object') return;
-          const p = normalizeCloudProduct(raw, `${source}-${docId || allProducts.length}`, source);
+          const p = normalizeCloudProduct(raw, `${source}-${docId || cloudProducts.length}`, source);
           if (!p) return;
-          // مفتاح للعرض فقط؛ لا يحذف شيئاً من Firebase.
-          const key = String(docId || p.id || `${p.name}|${p.price}|${p.img}`);
+          // قد يكون المنتج نفسه محفوظاً في المجموعتين العربية والإنجليزية أو مكرراً بمعرّفات مختلفة.
+          const key = productIdentity(p);
           if (seen.has(key)) return;
           seen.add(key);
-          if (!p.id) p.id = `${source}-${docId || allProducts.length}`;
-          allProducts.push(p);
+          if (!p.id) p.id = `${source}-${docId || cloudProducts.length}`;
+          cloudProducts.push(p);
         };
         try {
           const snap = await window.getDocs(window.collection(window.db, "منتجات"));
@@ -583,8 +588,16 @@
       } catch(e) {
         console.error("خطأ في قراءة بيانات Firebase:", e);
       }
-      // عرض منتجات القهوة فقط؛ وحفظ آخر نسخة ناجحة محلياً لفتح المتجر بسرعة عند ضعف الإنترنت.
-      allProducts = allProducts.filter(isCoffeeProduct);
+      // استخدم بيانات السحابة إذا وصلت؛ وإلا احتفظ بالنسخة المحلية كاحتياط. لا تخلط النسختين.
+      allProducts = (cloudProducts.length ? cloudProducts : cachedProducts).filter(isCoffeeProduct);
+      // إزالة أي تكرار مطابق بالاسم والسعر والصورة قبل العرض والحفظ.
+      const finalSeen = new Set();
+      allProducts = allProducts.filter(p => {
+        const key = [String(p.name || '').trim().toLocaleLowerCase(), String(p.price ?? '').trim(), String(p.img || '').trim().split('?')[0].toLocaleLowerCase()].join('|');
+        if (finalSeen.has(key)) return false;
+        finalSeen.add(key);
+        return true;
+      });
       productsLoading = false;
       try {
         if (allProducts.length || storeData.locationUrl || storeData.phone) {
