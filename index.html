@@ -210,6 +210,8 @@
       cursor: pointer; width: 100%; font-size: 13px; font-weight: 700; transition: background 0.2s;
     }
     .add-to-cart:hover { background: var(--primary-hover); }
+    .product-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.reserve-btn{background:#f2e0c8;color:#70452f;border:1px solid #c08b63;padding:10px 6px;border-radius:8px;cursor:pointer;width:100%;font-size:13px;font-weight:800}.reserve-btn:hover{background:#e7c9a7}
+    .order-success-overlay{position:fixed;inset:0;z-index:10000;background:#24170fcc;display:flex;align-items:center;justify-content:center;padding:20px}.order-success-box{background:#fffaf3;border-radius:20px;padding:28px 24px;text-align:center;width:min(330px,100%);box-shadow:0 15px 50px #0005;animation:zoomIn .25s ease}.order-success-check{width:72px;height:72px;border-radius:50%;background:#25a765;color:white;display:flex;align-items:center;justify-content:center;font-size:46px;margin:0 auto 14px;border:5px solid #d9f5e5}.order-success-box h3{color:#287c4b;margin-bottom:8px}.order-success-box p{line-height:1.7;color:#70452f;font-size:14px}
 
     .reviews-section { margin: 35px 0; background: var(--card-bg); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
     .reviews-section h3 { margin-bottom: 16px; font-size: 18px; color: var(--primary); font-weight: 800; }
@@ -666,7 +668,10 @@
             <div class="product-title">${p.name}</div>
             <div class="product-price">${p.price} ${p.currency || 'ر.س'}</div>
           </div>
-          <button class="add-to-cart" onclick="addToCart('${String(p.id).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')">إضافة للسلة ☕</button>
+          <div class="product-actions">
+            <button class="add-to-cart" onclick="addToCart('${String(p.id).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}', 'طلب')">إضافة للسلة ☕</button>
+            <button class="reserve-btn" onclick="openReservationPicker('${String(p.id).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}', 'حجز')">حجز 📅</button>
+          </div>
         `;
         container.appendChild(card);
       });
@@ -700,46 +705,46 @@
       renderProducts(allProducts.filter(isCoffeeProduct));
     }
 
-    function addToCart(id) {
+    function addToCart(id, orderType = 'طلب') {
       if (storeData.isClosed) {
         alert("عذراً، المتجر مغلق حالياً: " + (storeData.closeReason || ""));
         return;
       }
       const product = allProducts.find(p => String(p.id) === String(id));
       if (!product) { showToast('تعذر العثور على المنتج، حدّث قائمة المنتجات ثم حاول مجددًا.'); return; }
-      const existing = cart.find(item => String(item.id) === String(id));
+      const existing = cart.find(item => String(item.id) === String(id) && (item.orderType || 'طلب') === orderType);
       if (existing) {
         existing.qty += 1;
       } else {
-        cart.push({ id: id, qty: 1 });
+        cart.push({ id: id, qty: 1, orderType });
       }
       updateCartUI();
-      showToast(`تمت إضافة ${product.name} إلى السلة`, product.img);
+      showToast(orderType === 'حجز' ? `تمت إضافة حجز ${product.name} إلى السلة` : `تمت إضافة ${product.name} إلى السلة`, product.img);
     }
 
-    function updateQuantity(id, delta) {
-      const item = cart.find(i => String(i.id) === String(id));
+    function updateQuantity(id, delta, orderType = 'طلب') {
+      const item = cart.find(i => String(i.id) === String(id) && (i.orderType || 'طلب') === orderType);
       if (!item) return;
       item.qty += delta;
       if (item.qty <= 0) {
-        cart = cart.filter(i => String(i.id) !== String(id));
+        cart = cart.filter(i => !(String(i.id) === String(id) && (i.orderType || 'طلب') === orderType));
       }
       updateCartUI();
     }
 
-    function setQuantity(id, value) {
+    function setQuantity(id, value, orderType = 'طلب') {
       const val = parseInt(value);
       if (isNaN(val) || val <= 0) {
-        cart = cart.filter(i => String(i.id) !== String(id));
+        cart = cart.filter(i => !(String(i.id) === String(id) && (i.orderType || 'طلب') === orderType));
       } else {
-        const item = cart.find(i => String(i.id) === String(id));
+        const item = cart.find(i => String(i.id) === String(id) && (i.orderType || 'طلب') === orderType);
         if (item) item.qty = val;
       }
       updateCartUI();
     }
 
-    function removeFromCart(id) {
-      cart = cart.filter(i => String(i.id) !== String(id));
+    function removeFromCart(id, orderType = 'طلب') {
+      cart = cart.filter(i => !(String(i.id) === String(id) && (i.orderType || 'طلب') === orderType));
       updateCartUI();
     }
 
@@ -779,16 +784,16 @@
           <div class="cart-item">
             <img src="${p.img}">
             <div class="cart-item-info">
-              <div class="cart-item-title">${p.name}</div>
+              <div class="cart-item-title">${p.name}</div><div style="display:inline-block;margin-top:4px;padding:3px 8px;border-radius:7px;background:${cartItem.orderType === 'حجز' ? '#f2e0c8' : '#e3f5e8'};color:${cartItem.orderType === 'حجز' ? '#70452f' : '#287c4b'};font-size:12px;font-weight:800">${cartItem.orderType === 'حجز' ? '📅 حجز' : '🛒 طلب'}</div>
               <div class="cart-item-price-detail">السعر الفردي: ${p.price} ${curr}</div>
               <div class="quantity-control">
-                <button class="qty-btn" onclick="updateQuantity(${p.id}, -1)">-</button>
-                <input type="number" class="qty-input" value="${cartItem.qty}" min="1" onchange="setQuantity(${p.id}, this.value)">
-                <button class="qty-btn" onclick="updateQuantity(${p.id}, 1)">+</button>
+                <button class="qty-btn" onclick="updateQuantity('${p.id}', -1, '${cartItem.orderType || 'طلب'}')">-</button>
+                <input type="number" class="qty-input" value="${cartItem.qty}" min="1" onchange="setQuantity('${p.id}', this.value, '${cartItem.orderType || 'طلب'}')">
+                <button class="qty-btn" onclick="updateQuantity('${p.id}', 1, '${cartItem.orderType || 'طلب'}')">+</button>
               </div>
               <div class="cart-item-total">الإجمالي: ${itemTotal} ${curr}</div>
             </div>
-            <button onclick="removeFromCart(${p.id})" style="color:var(--accent); border:none; background:none; cursor:pointer; font-weight:700; font-size:13px;">حذف 🗑️</button>
+            <button onclick="removeFromCart('${p.id}', '${cartItem.orderType || 'طلب'}')" style="color:var(--accent); border:none; background:none; cursor:pointer; font-weight:700; font-size:13px;">حذف 🗑️</button>
           </div>
         `;
       }).join('');
@@ -858,7 +863,10 @@
       const location = document.getElementById('customer-location').value.trim();
       const orderId = 'COFFEE-' + Math.floor(100000 + Math.random() * 900000);
 
-      let msg = `☕ *طلب جديد من متجر د. رشفه ملكيه*\n`;
+      const hasReservation = cart.some(item => item.orderType === 'حجز');
+      const hasOrder = cart.some(item => (item.orderType || 'طلب') === 'طلب');
+      const orderLabel = hasReservation && hasOrder ? 'طلب وحجز' : (hasReservation ? 'حجز جديد' : 'طلب جديد');
+      let msg = `☕ *${orderLabel} من متجر د. رشفه ملكيه*\n`;
       msg += `*رقم الطلب:* ${orderId}\n`;
       if (customerName) {
         msg += `👤 *اسم العميل:* ${customerName}\n`;
@@ -876,6 +884,8 @@
           totals[currency] = (totals[currency] || 0) + itemSubtotal;
 
           msg += `${i + 1}. *${p.name}*\n`;
+          msg += `   • النوع: *${cartItem.orderType === 'حجز' ? 'حجز' : 'طلب'}*\n`;
+          if (cartItem.orderType === 'حجز' && cartItem.reservationDate && cartItem.reservationTime) { msg += `   • 📅 تاريخ الحجز: *${cartItem.reservationDate}*\n`; msg += `   • 🕒 وقت الحجز: *${cartItem.reservationTime}*\n`; }
           msg += `   • الكمية/العدد: *${cartItem.qty}*\n`;
           msg += `   • السعر الفردي: ${p.price} ${currency}\n`;
           msg += `   • الإجمالي: *${itemSubtotal} ${currency}*\n\n`;
@@ -890,11 +900,18 @@
         msg += `\n📍 *موقع/عنوان التوصيل:* \n${location}\n`;
       }
 
-      msg += `\n📌 *ملاحظات:*\nسوف يتم تحديد عمولة النقل والتوصيل بعد إرسال الطلب.\nشكراً لثقتكم بد. رشفه ملكيه! ☕🤎`;
+      msg += `\n\n📌 ملاحظات:\nسوف يتم تحديد عمولة التوصيل إذا أردت التوصيل بعد إرسال الطلب.\n\nشكراً لثقتكم بـ د. رشفه ملكيه! ☕🤎`;
 
       const targetPhone = storeData.phone || '966553804010';
       const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(msg)}`;
-      window.open(url, '_blank');
+      const waWindow = window.open('about:blank', '_blank');
+      const overlay = document.createElement('div');
+      overlay.className = 'order-success-overlay';
+      overlay.innerHTML = `<div class="order-success-box" role="status"><div class="order-success-check">✓</div><h3>تم تجهيز ${orderLabel} بنجاح</h3><p>سيتم نقلك الآن إلى واتساب لإرسال تفاصيل ${orderLabel} إلى المتجر.</p><div style="font-size:12px;color:#8a705f">إذا لم يفتح واتساب، اضغط متابعة.</div><button id="continue-whatsapp" style="margin-top:16px;background:#25d366;color:#fff;border:0;border-radius:10px;padding:12px 20px;font-weight:800;width:100%;cursor:pointer">متابعة إلى واتساب</button></div>`;
+      document.body.appendChild(overlay);
+      const goWhatsApp = () => { if (waWindow && !waWindow.closed) waWindow.location.href = url; else window.location.href = url; };
+      overlay.querySelector('#continue-whatsapp').addEventListener('click', goWhatsApp);
+      if (waWindow) setTimeout(goWhatsApp, 900);
     }
 
     function renderReviews() {
@@ -1002,3 +1019,35 @@
 </script>
 </body>
 </html>
+<style>
+.product-actions{display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important;margin-top:14px!important}
+.product-actions button{width:100%!important;min-height:58px!important;border-radius:15px!important;font-size:17px!important;font-weight:900!important;box-shadow:0 5px 0 rgba(70,40,20,.12),0 7px 16px rgba(70,40,20,.10)!important;transition:transform .15s,filter .15s!important}
+.product-actions button:active{transform:scale(.98)!important;filter:brightness(.95)}
+.reserve-modal{position:fixed;inset:0;background:rgba(35,22,15,.62);z-index:99999;display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}
+.reserve-modal.show{display:flex}.reserve-box{width:min(100%,420px);background:#fffaf3;border:2px solid #ead7c3;border-radius:24px;padding:22px;box-shadow:0 20px 60px #0004;color:#493326}.reserve-box h3{text-align:center;margin-bottom:8px;font-size:22px}.reserve-box p{text-align:center;color:#8a705f;margin-bottom:18px}.reserve-box label{display:block;font-weight:800;margin:12px 0 7px}.reserve-box input{width:100%;padding:13px;border:1px solid #d8bea5;border-radius:12px;background:white;font-size:16px;direction:ltr}.reserve-buttons{display:flex;gap:10px;margin-top:20px}.reserve-buttons button{flex:1;padding:13px 8px;border:0;border-radius:12px;font-weight:900;font-size:15px}.reserve-save{background:#95694e;color:white}.reserve-cancel{background:#eee0d1;color:#493326}
+</style>
+<div class="reserve-modal" id="reservation-picker" role="dialog" aria-modal="true" aria-labelledby="reservation-title"><div class="reserve-box"><h3 id="reservation-title">📅 تحديد موعد الحجز</h3><p id="reservation-product-name">اختر التاريخ والوقت المناسبين</p><label for="reservation-date">📆 تاريخ الحجز</label><input type="date" id="reservation-date"><label for="reservation-time">🕒 وقت الحجز</label><input type="time" id="reservation-time"><div class="reserve-buttons"><button class="reserve-save" onclick="confirmReservation()">✓ تأكيد الحجز</button><button class="reserve-cancel" onclick="closeReservationPicker()">إلغاء</button></div></div></div>
+<script>
+let pendingReservationProductId = null;
+function openReservationPicker(id){
+ if(storeData.isClosed){alert('عذراً، المتجر مغلق حالياً.');return;}
+ const p=allProducts.find(x=>String(x.id)===String(id)); if(!p){showToast('تعذر العثور على المنتج.');return;}
+ pendingReservationProductId=id;
+ document.getElementById('reservation-product-name').textContent='حجز: '+p.name+' — اختر التاريخ والوقت';
+ const d=new Date(), local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+ const dateInput=document.getElementById('reservation-date'); dateInput.min=local; dateInput.value=local;
+ const timeInput=document.getElementById('reservation-time'); timeInput.value='10:00';
+ document.getElementById('reservation-picker').classList.add('show');
+}
+function closeReservationPicker(){document.getElementById('reservation-picker').classList.remove('show');pendingReservationProductId=null;}
+function confirmReservation(){
+ const date=document.getElementById('reservation-date').value, time=document.getElementById('reservation-time').value;
+ if(!date||!time){alert('يرجى تحديد تاريخ ووقت الحجز.');return;}
+ if(new Date(date+'T'+time).getTime()<Date.now()-60000){alert('اختر موعداً قادماً.');return;}
+ const id=pendingReservationProductId; if(id===null)return;
+ const p=allProducts.find(x=>String(x.id)===String(id)); if(!p)return;
+ const existing=cart.find(item=>String(item.id)===String(id)&&(item.orderType||'طلب')==='حجز'&&item.reservationDate===date&&item.reservationTime===time);
+ if(existing)existing.qty+=1;else cart.push({id:id,qty:1,orderType:'حجز',reservationDate:date,reservationTime:time});
+ updateCartUI();closeReservationPicker();showToast('تمت إضافة حجز '+p.name+' بتاريخ '+date+' الساعة '+time,p.img);
+}
+</script>
