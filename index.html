@@ -962,7 +962,7 @@
       alert('شكراً لك على تقييمك!');
     }
   
-    // إخفاء مربع التثبيت نهائياً عند فتح المتجر كتطبيق مثبت.
+    // تثبيت PWA: يستدعي نافذة التثبيت الرسمية مباشرة من ضغطة المستخدم.
     (function setupInstallPrompt(){
       const note = document.getElementById('install-note');
       const action = document.getElementById('install-action');
@@ -970,17 +970,28 @@
       const close = document.getElementById('install-close');
       const skip = document.getElementById('install-skip');
       let installPrompt = null;
-      const isRunningAsApp = () => window.matchMedia('(display-mode: standalone)').matches ||
-        window.matchMedia('(display-mode: fullscreen)').matches || window.navigator.standalone === true;
-      const isInstalled = () => isRunningAsApp() || localStorage.getItem('coffeeAppInstalled') === '1';
+      let promptReady = false;
+      const isRunningAsApp = () => !!((window.matchMedia && (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches)) || window.navigator.standalone === true);
+      const isInstalled = () => isRunningAsApp();
       const hideInstallBox = () => { note.hidden = true; note.style.display = 'none'; };
-      if (isInstalled()) { hideInstallBox(); }
-      close.addEventListener('click', () => { note.hidden = true; });
-      skip.addEventListener('click', () => { note.hidden = true; try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
+      const showInstallBox = () => {
+        if (isInstalled()) { hideInstallBox(); return; }
+        note.hidden = false;
+        note.style.display = 'flex';
+      };
+      close.addEventListener('click', () => {
+        hideInstallBox();
+        try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {}
+      });
+      skip.addEventListener('click', () => {
+        hideInstallBox();
+        try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {}
+      });
       action.addEventListener('click', async () => {
         if (isInstalled()) { hideInstallBox(); return; }
-        // لا يمكن للموقع منح صلاحية تثبيت Android بنفسه؛ عند دعم PWA
-        // نطلب من المتصفح إظهار نافذة التثبيت الأصلية مباشرة من نقرة المستخدم.
+        // prompt() must be called from the user's click and only after Chrome provides the event.
         if (installPrompt) {
           const promptEvent = installPrompt;
           installPrompt = null;
@@ -988,43 +999,42 @@
             await promptEvent.prompt();
             const choice = await promptEvent.userChoice;
             if (choice && choice.outcome === 'accepted') {
-              message.textContent = 'تمت الموافقة على التثبيت. أكمل الخطوات التي يعرضها المتصفح.';
+              message.textContent = 'تم قبول طلب التثبيت. اتبع أي تأكيد يظهر من النظام لإضافة التطبيق إلى الشاشة الرئيسية.';
+              action.textContent = 'جارٍ التثبيت…';
             } else {
-              message.textContent = 'لم يتم التثبيت. يمكنك الضغط على «تثبيت التطبيق» والمحاولة مرة أخرى.';
+              message.textContent = 'تم إلغاء التثبيت. يمكنك الضغط على الزر مجدداً عندما يظهر خيار التثبيت.';
+              action.textContent = 'إعادة المحاولة';
             }
           } catch (e) {
-            message.textContent = 'تعذر فتح نافذة التثبيت الآن. افتح قائمة Chrome ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».';
+            message.textContent = 'لم يتمكن المتصفح من فتح نافذة التثبيت. افتح الموقع في Chrome وتأكد من تحديث الصفحة.';
+            action.textContent = 'إعادة المحاولة';
           }
         } else {
-          const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
-          message.textContent = isSecure
-            ? 'إذا لم تظهر نافذة التثبيت تلقائياً، افتح قائمة Chrome ⋮ أعلى الشاشة ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». إذا لم يظهر الخيار، افتح الموقع بمتصفح Chrome وتأكد من اتصال الإنترنت.'
-            : 'يجب فتح المتجر عبر رابط HTTPS حتى يسمح المتصفح بالتثبيت. افتح رابط الموقع الآمن في Chrome ثم اختر «تثبيت التطبيق».';
+          message.textContent = 'نافذة التثبيت الرسمية غير متاحة حالياً. افتح الموقع في Chrome عبر HTTPS، وانتظر قليلاً ثم حدّث الصفحة. إذا لم تظهر النافذة، فقد لا يكون المتصفح قد أتاح التثبيت لهذا الجهاز بعد.';
+          action.textContent = 'حاول التثبيت مرة أخرى';
         }
       });
       window.addEventListener('beforeinstallprompt', (e) => {
-        if (isInstalled()) { hideInstallBox(); return; }
         e.preventDefault();
         installPrompt = e;
-        // لا نظهر نافذة تثبيت المتصفح إلا بعد ضغط المستخدم على الزر.
+        promptReady = true;
+        if (isInstalled()) { hideInstallBox(); return; }
+        message.textContent = 'اضغط تثبيت التطبيق، ثم وافق على نافذة التثبيت الرسمية.';
+        action.textContent = 'تثبيت التطبيق';
+        if (!sessionStorage.getItem('coffeeInstallDismissed')) showInstallBox();
       });
       window.addEventListener('appinstalled', () => {
-        try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
+        installPrompt = null;
+        message.textContent = 'تم تثبيت التطبيق بنجاح.';
         hideInstallBox();
       });
-      window.matchMedia('(display-mode: standalone)').addEventListener?.('change', () => {
-        if (isRunningAsApp()) hideInstallBox();
-      });
-      // إظهار مربع تثبيت صغير أسفل الشاشة ما لم يكن التطبيق مثبتاً أو اختار المستخدم تخطيه.
-      const showInstallBoxIfNeeded = () => {
-        if (!isInstalled() && !sessionStorage.getItem('coffeeInstallDismissed')) {
-          note.hidden = false;
-          note.style.display = 'flex';
-        }
-      };
-      window.addEventListener('beforeinstallprompt', showInstallBoxIfNeeded);
-      setTimeout(showInstallBoxIfNeeded, 900);
-      close.addEventListener('click', () => { hideInstallBox(); try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
+      const modeQuery = window.matchMedia && window.matchMedia('(display-mode: standalone)');
+      if (modeQuery && modeQuery.addEventListener) modeQuery.addEventListener('change', () => { if (isRunningAsApp()) hideInstallBox(); });
+      if (isInstalled()) hideInstallBox();
+      else if (!sessionStorage.getItem('coffeeInstallDismissed')) {
+        // Show the in-page install card, but never fake a successful installation.
+        setTimeout(showInstallBox, 900);
+      }
     })();
 
     if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
