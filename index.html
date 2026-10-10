@@ -979,22 +979,34 @@
       skip.addEventListener('click', () => { note.hidden = true; try { sessionStorage.setItem('coffeeInstallDismissed','1'); } catch(e) {} });
       action.addEventListener('click', async () => {
         if (isInstalled()) { hideInstallBox(); return; }
+        // لا يمكن للموقع منح صلاحية تثبيت Android بنفسه؛ عند دعم PWA
+        // نطلب من المتصفح إظهار نافذة التثبيت الأصلية مباشرة من نقرة المستخدم.
         if (installPrompt) {
-          installPrompt.prompt();
-          let choice = null;
-          try { choice = await installPrompt.userChoice; } catch(e) {}
+          const promptEvent = installPrompt;
           installPrompt = null;
-          if (choice && choice.outcome === 'accepted') {
-            try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
-            hideInstallBox();
+          try {
+            await promptEvent.prompt();
+            const choice = await promptEvent.userChoice;
+            if (choice && choice.outcome === 'accepted') {
+              message.textContent = 'تمت الموافقة على التثبيت. أكمل الخطوات التي يعرضها المتصفح.';
+            } else {
+              message.textContent = 'لم يتم التثبيت. يمكنك الضغط على «تثبيت التطبيق» والمحاولة مرة أخرى.';
+            }
+          } catch (e) {
+            message.textContent = 'تعذر فتح نافذة التثبيت الآن. افتح قائمة Chrome ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».';
           }
         } else {
-          message.textContent = 'من قائمة المتصفح اختر «إضافة إلى الشاشة الرئيسية» لتثبيت التطبيق.';
+          const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
+          message.textContent = isSecure
+            ? 'إذا لم تظهر نافذة التثبيت تلقائياً، افتح قائمة Chrome ⋮ أعلى الشاشة ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». إذا لم يظهر الخيار، افتح الموقع بمتصفح Chrome وتأكد من اتصال الإنترنت.'
+            : 'يجب فتح المتجر عبر رابط HTTPS حتى يسمح المتصفح بالتثبيت. افتح رابط الموقع الآمن في Chrome ثم اختر «تثبيت التطبيق».';
         }
       });
       window.addEventListener('beforeinstallprompt', (e) => {
         if (isInstalled()) { hideInstallBox(); return; }
-        e.preventDefault(); installPrompt = e;
+        e.preventDefault();
+        installPrompt = e;
+        // لا نظهر نافذة تثبيت المتصفح إلا بعد ضغط المستخدم على الزر.
       });
       window.addEventListener('appinstalled', () => {
         try { localStorage.setItem('coffeeAppInstalled','1'); } catch(e) {}
@@ -1020,8 +1032,11 @@
 </body>
 </html>
 <style>
-.product-actions{display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important;margin-top:14px!important}
-.product-actions button{width:100%!important;min-height:58px!important;border-radius:15px!important;font-size:17px!important;font-weight:900!important;box-shadow:0 5px 0 rgba(70,40,20,.12),0 7px 16px rgba(70,40,20,.10)!important;transition:transform .15s,filter .15s!important}
+.product-actions{display:flex!important;flex-direction:row!important;align-items:stretch!important;gap:8px!important;width:100%!important;margin-top:14px!important}
+.product-actions button{min-width:0!important;border-radius:13px!important;font-size:14px!important;min-height:46px!important;font-weight:900!important;box-shadow:0 4px 0 rgba(70,40,20,.12),0 6px 13px rgba(70,40,20,.10)!important;transition:transform .15s,filter .15s!important;padding:8px 5px!important}
+.product-actions .add-to-cart{flex:2.2!important;width:auto!important;font-size:15px!important;min-height:50px!important}
+.product-actions .reserve-btn{flex:1!important;width:auto!important;font-size:12px!important;min-height:42px!important;padding:6px 3px!important}
+@media(max-width:360px){.product-actions{gap:5px!important}.product-actions button{font-size:12px!important}.product-actions .add-to-cart{font-size:13px!important}}
 .product-actions button:active{transform:scale(.98)!important;filter:brightness(.95)}
 .reserve-modal{position:fixed;inset:0;background:rgba(35,22,15,.62);z-index:99999;display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}
 .reserve-modal.show{display:flex}.reserve-box{width:min(100%,420px);background:#fffaf3;border:2px solid #ead7c3;border-radius:24px;padding:22px;box-shadow:0 20px 60px #0004;color:#493326}.reserve-box h3{text-align:center;margin-bottom:8px;font-size:22px}.reserve-box p{text-align:center;color:#8a705f;margin-bottom:18px}.reserve-box label{display:block;font-weight:800;margin:12px 0 7px}.reserve-box input{width:100%;padding:13px;border:1px solid #d8bea5;border-radius:12px;background:white;font-size:16px;direction:ltr}.reserve-buttons{display:flex;gap:10px;margin-top:20px}.reserve-buttons button{flex:1;padding:13px 8px;border:0;border-radius:12px;font-weight:900;font-size:15px}.reserve-save{background:#95694e;color:white}.reserve-cancel{background:#eee0d1;color:#493326}
