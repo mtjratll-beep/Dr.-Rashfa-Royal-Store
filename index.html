@@ -33,6 +33,17 @@
     })();
   </script>
   
+  <!-- Fallback واضح للمتصفحات القديمة التي لا تدعم JavaScript Modules -->
+  <script nomodule>
+    document.addEventListener('DOMContentLoaded', function () {
+      var notice = document.createElement('div');
+      notice.setAttribute('role', 'alert');
+      notice.style.cssText = 'position:fixed;z-index:2147483647;inset:12px 12px auto;padding:16px;border-radius:12px;background:#fff3cd;color:#493326;border:1px solid #e0bd65;font:16px/1.7 Tahoma,Arial,sans-serif;text-align:center;box-shadow:0 4px 18px #0002';
+      notice.innerHTML = '<strong>يرجى تحديث المتصفح</strong><br>هذا المتصفح قديم ولا يدعم تقنيات المتجر الحالية. افتح الرابط في أحدث إصدار من Chrome أو Safari أو Samsung Internet.';
+      document.body.appendChild(notice);
+    });
+  </script>
+
   <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
@@ -606,6 +617,7 @@
           snap.forEach(d => storeData.reviews.push({ firestoreId: d.id, ...d.data() }));
         } catch(e) { console.warn("تعذر قراءة reviews", e); }
 
+        storeData.reviews = uniqueReviews(storeData.reviews);
         console.log("Firebase cloud data loaded directly", {
           products: allProducts.length,
           reviews: storeData.reviews.length
@@ -970,17 +982,35 @@
       if (waWindow) setTimeout(goWhatsApp, 900);
     }
 
+    // إزالة التقييمات المتكررة التي قد تأتي من أكثر من مجموعة في Firebase.
+    function uniqueReviews(reviews) {
+      const seen = new Set();
+      return (Array.isArray(reviews) ? reviews : []).filter(r => {
+        if (!r || typeof r !== 'object') return false;
+        const name = String(r.name ?? r.اسم ?? '').trim().toLocaleLowerCase();
+        const text = String(r.text ?? r.الرأي ?? r.comment ?? r.التعليق ?? '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+        const rating = Number(r.rating ?? r.التقييم ?? r.stars ?? 0);
+        if (!name && !text) return false;
+        // نعتمد المحتوى أيضاً لأن نفس التقييم قد يكون محفوظاً بمعرّفات مختلفة.
+        const contentKey = `${name}|${rating}|${text}`;
+        const idKey = r.firestoreId ? `id:${r.firestoreId}` : '';
+        if (seen.has(contentKey) || (idKey && seen.has(idKey))) return false;
+        seen.add(contentKey);
+        if (idKey) seen.add(idKey);
+        return true;
+      });
+    }
+
     function renderReviews() {
       const list = document.getElementById('reviews-list');
-      list.innerHTML = (storeData.reviews || []).map(r => `
-        <div class="review-item">
-          <div class="review-header">
-            <span>${r.name}</span>
-            <span class="review-stars">${'★'.repeat(r.rating)}</span>
-          </div>
-          <div>${r.text}</div>
-        </div>
-      `).join('');
+      if (!list) return;
+      storeData.reviews = uniqueReviews(storeData.reviews);
+      list.innerHTML = storeData.reviews.map(r => {
+        const name = String(r.name ?? r.اسم ?? 'عميل').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const text = String(r.text ?? r.الرأي ?? r.comment ?? r.التعليق ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const rating = Math.max(0, Math.min(5, Number(r.rating ?? r.التقييم ?? r.stars ?? 0) || 0));
+        return `<div class="review-item"><div class="review-header"><span>${name}</span><span class="review-stars">${'★'.repeat(rating)}</span></div><div>${text}</div></div>`;
+      }).join('');
     }
 
     function setRating(stars) {
@@ -1010,7 +1040,7 @@
       }
 
       if(!storeData.reviews) storeData.reviews = [];
-      storeData.reviews.push(newReview);
+      storeData.reviews = uniqueReviews([...(storeData.reviews || []), newReview]);
       renderReviews();
 
       document.getElementById('review-name').value = '';
