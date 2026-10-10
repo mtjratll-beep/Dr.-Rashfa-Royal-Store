@@ -169,7 +169,7 @@
   <div class="section-box">
     <div class="section-title">📌 البيانات الأساسية للمتجر</div>
     <label>رقم الواتساب (مع الرمز الدولي بدون +):</label>
-    <input type="text" id="store-phone" placeholder="مثال: 966553804010">
+    <input type="text" id="store-phone" placeholder="أدخل رقمك اليمني: 73xxxxxxx أو 77xxxxxxx أو 71xxxxxxx أو 78xxxxxxx">
     <label>📍 رابط موقع المتجر (Google Maps):</label>
     <input type="text" id="store-location-url" placeholder="مثال: https://maps.google.com/?q=...">
     <label>شعار الموقع والتطبيق (يظهر في أعلى المتجر وشاشة البداية):</label>
@@ -405,7 +405,7 @@
   });
 
   function fillFormFields() {
-    document.getElementById('store-phone').value = storeData.phone || "966553804010";
+    document.getElementById('store-phone').value = storeData.phone || "967771234567";
     document.getElementById('store-location-url').value = storeData.locationUrl || "";
     document.getElementById('store-close-reason').value = storeData.closeReason || "";
     if(storeData.logo) document.getElementById('logo-preview').src = storeData.logo;
@@ -506,7 +506,20 @@
   }
 
   async function saveBasicSettings() {
-    storeData.phone = document.getElementById('store-phone').value.trim() || "966553804010";
+    const phoneInput = document.getElementById('store-phone');
+    const rawPhone = phoneInput.value.trim();
+    let phone = rawPhone.replace(/\D/g, '');
+    if (phone.startsWith('00967')) phone = phone.slice(2);
+    if (phone.startsWith('0')) phone = phone.slice(1);
+    // أضف رمز اليمن 967 تلقائياً للأرقام المحلية التي تبدأ بـ 73 أو 77 أو 71 أو 78.
+    if (/^(73|77|71|78)\d{7}$/.test(phone)) phone = '967' + phone;
+    if (!/^967(73|77|71|78)\d{7}$/.test(phone)) {
+      alert('أدخل رقم يمني صحيحاً من 9 أرقام يبدأ بـ 73 أو 77 أو 71 أو 78، أو اكتبه مع رمز اليمن 967.');
+      phoneInput.focus();
+      return;
+    }
+    phoneInput.value = phone;
+    storeData.phone = phone;
     storeData.locationUrl = document.getElementById('store-location-url').value.trim();
     storeData.closeReason = document.getElementById('store-close-reason').value.trim();
     await saveSettingsToCloud();

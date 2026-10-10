@@ -299,6 +299,8 @@
   </style>
 </head>
 <body>
+<script>(function(){function showOffline(){if(document.getElementById('rashfa-offline-wall'))return;var wall=document.createElement('div');wall.id='rashfa-offline-wall';wall.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#fff8ee;color:#493426;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Arial,sans-serif;';wall.innerHTML='<div><h2>الاتصال بالإنترنت مطلوب</h2><p>يرجى تشغيل الإنترنت لاستخدام متجر د. رشفه ملكيه وتحديث الأسعار والطلبات.</p><button id="rashfa-retry" style="padding:12px 22px;border:0;border-radius:10px;background:#6d4933;color:white;font-size:16px">إعادة المحاولة</button></div>';document.body.appendChild(wall);document.getElementById('rashfa-retry').onclick=function(){location.reload()}}function hideOffline(){var wall=document.getElementById('rashfa-offline-wall');if(wall)wall.remove()}if(!navigator.onLine)showOffline();window.addEventListener('offline',showOffline);window.addEventListener('online',function(){hideOffline();location.reload()})})();</script>
+
 
   <div id="closed-banner" class="store-closed-bar">
     🔒 المتجر مغلق حالياً: <span id="closed-reason-text">سوف نعود قريباً</span>
@@ -449,6 +451,16 @@
 
     let allProducts = [];
     let productsLoading = true;
+    // اعرض آخر بيانات محفوظة فوراً إذا كان الاتصال ضعيفاً أو غير متوفر.
+    try {
+      const saved = localStorage.getItem('rashfa-store-cache-v1');
+      if (saved) {
+        const snapshot = JSON.parse(saved);
+        if (snapshot && snapshot.storeData) storeData = { ...storeData, ...snapshot.storeData };
+        if (snapshot && Array.isArray(snapshot.products)) allProducts = snapshot.products;
+        productsLoading = false;
+      }
+    } catch (_) {}
     let cart = [];
     let selectedRating = 5;
     let currentSlide = 0;
@@ -496,9 +508,10 @@
     }
 
     async function fetchStoreDataFromCloud() {
-      // قراءة مباشرة من Firestore نفسه. لا يوجد cache محلي ولا حذف أو نقل للبيانات.
-      allProducts = [];
-      storeData.reviews = [];
+      // احتفظ بآخر نسخة معروضة إلى أن تصل البيانات السحابية، لتجنب شاشة فارغة مع الشبكة البطيئة.
+      const hadCachedProducts = Array.isArray(allProducts) && allProducts.length > 0;
+      if (!hadCachedProducts) allProducts = [];
+      if (!Array.isArray(storeData.reviews)) storeData.reviews = [];
       try {
         // 1) إعدادات المتجر: نقرأ البنية الحالية والقديمة معاً.
         try {
@@ -570,9 +583,14 @@
       } catch(e) {
         console.error("خطأ في قراءة بيانات Firebase:", e);
       }
-      // عرض منتجات القهوة فقط؛ لا يتم حذف أو تعديل أي بيانات في قاعدة البيانات.
+      // عرض منتجات القهوة فقط؛ وحفظ آخر نسخة ناجحة محلياً لفتح المتجر بسرعة عند ضعف الإنترنت.
       allProducts = allProducts.filter(isCoffeeProduct);
       productsLoading = false;
+      try {
+        if (allProducts.length || storeData.locationUrl || storeData.phone) {
+          localStorage.setItem('rashfa-store-cache-v1', JSON.stringify({storeData, products: allProducts, savedAt: Date.now()}));
+        }
+      } catch (e) { console.warn('تعذر حفظ النسخة المحلية', e); }
       initUI();
     }
 
