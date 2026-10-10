@@ -1,5 +1,5 @@
 // يعمل مع الإنترنت القوي والضعيف: الملفات الثابتة من الذاكرة المؤقتة، وصفحات المتجر تتطلب اتصالاً بالشبكة.
-const CACHE = 'rashfa-store-v16';
+const CACHE = 'rashfa-store-v18';
 const CORE = ['./', './index.html', './admin.html', './manifest.json', './brand-logo.jpg', './icon-192.png', './icon-512.png', './coffee-ad-banner.jpg', './coffee-pattern.jpg'];
 self.addEventListener('install', event => { event.waitUntil((async () => { const cache = await caches.open(CACHE); await Promise.all(CORE.map(async url => { try { const r = await fetch(url, {cache:'reload'}); if (r.ok) await cache.put(url, r); } catch (_) {} })); await self.skipWaiting(); })()); });
 self.addEventListener('activate', event => { event.waitUntil((async () => { for (const key of await caches.keys()) if (key.startsWith('rashfa-store-') && key !== CACHE) await caches.delete(key); await self.clients.claim(); })()); });
