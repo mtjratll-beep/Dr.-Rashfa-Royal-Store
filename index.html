@@ -953,7 +953,7 @@
 
           msg += `${i + 1}. *${p.name}*\n`;
           msg += `   • النوع: *${cartItem.orderType === 'حجز' ? 'حجز' : 'طلب'}*\n`;
-          if (cartItem.orderType === 'حجز' && cartItem.reservationDate && cartItem.reservationTime) { msg += `   • 📅 تاريخ الحجز: *${cartItem.reservationDate}*\n`; msg += `   • 🕒 وقت الحجز: *${cartItem.reservationTime}*\n`; }
+          if (cartItem.orderType === 'حجز' && cartItem.reservationDate && cartItem.reservationTime) { msg += `   • 📅 تاريخ الحجز: *${cartItem.reservationDate}*\n`; msg += `   • 🕒 وقت الحجز: *${cartItem.reservationTimeDisplay || cartItem.reservationTime}*\n`; }
           msg += `   • الكمية/العدد: *${cartItem.qty}*\n`;
           msg += `   • السعر الفردي: ${p.price} ${currency}\n`;
           msg += `   • الإجمالي: *${itemSubtotal} ${currency}*\n\n`;
@@ -1139,7 +1139,7 @@
 .reserve-modal{position:fixed;inset:0;background:rgba(35,22,15,.62);z-index:99999;display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}
 .reserve-modal.show{display:flex}.reserve-box{width:min(100%,420px);background:#fffaf3;border:2px solid #ead7c3;border-radius:24px;padding:22px;box-shadow:0 20px 60px #0004;color:#493326}.reserve-box h3{text-align:center;margin-bottom:8px;font-size:22px}.reserve-box p{text-align:center;color:#8a705f;margin-bottom:18px}.reserve-box label{display:block;font-weight:800;margin:12px 0 7px}.reserve-box input{width:100%;padding:13px;border:1px solid #d8bea5;border-radius:12px;background:white;font-size:16px;direction:ltr}.reserve-buttons{display:flex;gap:10px;margin-top:20px}.reserve-buttons button{flex:1;padding:13px 8px;border:0;border-radius:12px;font-weight:900;font-size:15px}.reserve-save{background:#95694e;color:white}.reserve-cancel{background:#eee0d1;color:#493326}
 </style>
-<div class="reserve-modal" id="reservation-picker" role="dialog" aria-modal="true" aria-labelledby="reservation-title"><div class="reserve-box"><h3 id="reservation-title">📅 تحديد موعد الحجز</h3><p id="reservation-product-name">اختر التاريخ والوقت المناسبين</p><label for="reservation-date">📆 تاريخ الحجز</label><input type="date" id="reservation-date"><label for="reservation-time">🕒 وقت الحجز</label><input type="time" id="reservation-time"><div class="reserve-buttons"><button class="reserve-save" onclick="confirmReservation()">✓ تأكيد الحجز</button><button class="reserve-cancel" onclick="closeReservationPicker()">إلغاء</button></div></div></div>
+<div class="reserve-modal" id="reservation-picker" role="dialog" aria-modal="true" aria-labelledby="reservation-title"><div class="reserve-box"><h3 id="reservation-title">📅 تحديد موعد الحجز</h3><p id="reservation-product-name">اختر التاريخ والوقت المناسبين</p><label for="reservation-date">📆 تاريخ الحجز</label><input type="date" id="reservation-date"><label for="reservation-hour">🕒 وقت الحجز (12 ساعة)</label><div class="reservation-time-row" style="display:flex;gap:8px;direction:rtl"><select id="reservation-hour" aria-label="الساعة" style="flex:1;min-width:0;padding:13px;border:1px solid #d8bea5;border-radius:12px;background:white;font-size:16px"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10" selected>10</option><option value="11">11</option><option value="12">12</option></select><select id="reservation-minute" aria-label="الدقائق" style="flex:1;min-width:0;padding:13px;border:1px solid #d8bea5;border-radius:12px;background:white;font-size:16px"><option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option></select><select id="reservation-period" aria-label="الفترة" style="flex:1;min-width:0;padding:13px;border:1px solid #d8bea5;border-radius:12px;background:white;font-size:16px"><option value="AM">صباحاً</option><option value="PM">مساءً</option></select></div><div class="reserve-buttons"><button class="reserve-save" onclick="confirmReservation()">✓ تأكيد الحجز</button><button class="reserve-cancel" onclick="closeReservationPicker()">إلغاء</button></div></div></div>
 <script>
 let pendingReservationProductId = null;
 function openReservationPicker(id){
@@ -1149,18 +1149,24 @@ function openReservationPicker(id){
  document.getElementById('reservation-product-name').textContent='حجز: '+p.name+' — اختر التاريخ والوقت';
  const d=new Date(), local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
  const dateInput=document.getElementById('reservation-date'); dateInput.min=local; dateInput.value=local;
- const timeInput=document.getElementById('reservation-time'); timeInput.value='10:00';
+ document.getElementById('reservation-hour').value='10'; document.getElementById('reservation-minute').value='00'; document.getElementById('reservation-period').value='AM';
  document.getElementById('reservation-picker').classList.add('show');
 }
 function closeReservationPicker(){document.getElementById('reservation-picker').classList.remove('show');pendingReservationProductId=null;}
 function confirmReservation(){
- const date=document.getElementById('reservation-date').value, time=document.getElementById('reservation-time').value;
- if(!date||!time){alert('يرجى تحديد تاريخ ووقت الحجز.');return;}
+ const date=document.getElementById('reservation-date').value;
+ const hour=Number(document.getElementById('reservation-hour').value);
+ const minute=document.getElementById('reservation-minute').value;
+ const period=document.getElementById('reservation-period').value;
+ if(!date||!hour||!minute||!period){alert('يرجى تحديد تاريخ ووقت الحجز.');return;}
+ const hour24=(hour%12)+(period==='PM'?12:0);
+ const time=String(hour24).padStart(2,'0')+':'+minute;
+ const displayTime=hour+':'+minute+' '+(period==='AM'?'صباحاً':'مساءً');
  if(new Date(date+'T'+time).getTime()<Date.now()-60000){alert('اختر موعداً قادماً.');return;}
  const id=pendingReservationProductId; if(id===null)return;
  const p=allProducts.find(x=>String(x.id)===String(id)); if(!p)return;
  const existing=cart.find(item=>String(item.id)===String(id)&&(item.orderType||'طلب')==='حجز'&&item.reservationDate===date&&item.reservationTime===time);
- if(existing)existing.qty+=1;else cart.push({id:id,qty:1,orderType:'حجز',reservationDate:date,reservationTime:time});
- updateCartUI();closeReservationPicker();showToast('تمت إضافة حجز '+p.name+' بتاريخ '+date+' الساعة '+time,p.img);
+ if(existing)existing.qty+=1;else cart.push({id:id,qty:1,orderType:'حجز',reservationDate:date,reservationTime:time,reservationTimeDisplay:displayTime});
+ updateCartUI();closeReservationPicker();showToast('تمت إضافة حجز '+p.name+' بتاريخ '+date+' الساعة '+displayTime,p.img);
 }
 </script>
