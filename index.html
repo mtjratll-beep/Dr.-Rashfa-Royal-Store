@@ -379,7 +379,7 @@
   <div id="install-note" class="install-note" hidden role="dialog" aria-label="تثبيت التطبيق">
     <div class="install-copy"><strong>☕ د. رشفه ملكيه</strong><br><span id="install-message">ثبّت التطبيق لتصل إلى قهوتك المفضلة بسهولة.</span></div>
     <button id="install-action" class="install-action" type="button">تثبيت التطبيق</button>
-    <div style="font-size:12px;line-height:1.5;color:#f7e6d3">يمكنك تثبيت التطبيق للوصول إليه بسرعة في المرات القادمة.</div>
+    <div style="font-size:12px;line-height:1.5;color:#f7e6d3">إذا تعذّر التثبيت، سيظهر تنبيه يوضح أن هذا المتصفح لا يدعم التثبيت.</div>
     <button id="install-skip" class="install-skip" type="button">تخطي</button>
     <button id="install-close" class="install-close" type="button" aria-label="إغلاق">×</button>
   </div>
@@ -1092,12 +1092,14 @@
               action.textContent = 'إعادة المحاولة';
             }
           } catch (e) {
-            message.textContent = 'لم يتمكن المتصفح من فتح نافذة التثبيت. افتح الموقع في Chrome وتأكد من تحديث الصفحة.';
-            action.textContent = 'إعادة المحاولة';
+            message.textContent = 'هذا المتصفح لا يدعم التثبيت المباشر.';
+            action.textContent = 'التثبيت غير مدعوم';
+            action.disabled = true;
           }
         } else {
-          message.textContent = 'نافذة التثبيت الرسمية غير متاحة حالياً. افتح الموقع في Chrome عبر HTTPS، وانتظر قليلاً ثم حدّث الصفحة. إذا لم تظهر النافذة، فقد لا يكون المتصفح قد أتاح التثبيت لهذا الجهاز بعد.';
-          action.textContent = 'حاول التثبيت مرة أخرى';
+          message.textContent = 'هذا المتصفح لا يدعم التثبيت المباشر.';
+          action.textContent = 'التثبيت غير مدعوم';
+          action.disabled = true;
         }
       });
       window.addEventListener('beforeinstallprompt', (e) => {
